@@ -2532,6 +2532,8 @@ let guideSelectedInputId=null;
 let guideStepUnlocked=false;
 let guideStepStates=[]; // per-topic step states [{done:boolean, value?:number}]
 let guideUiVariant=(new URLSearchParams(location.search).get('guide')==='popup')?'popup':'inline';
+const __profile=(new URLSearchParams(location.search).get('profile')||'advanced').toLowerCase();
+window.GUIDE_MODE=(__profile==='novice')?'novice':'advanced';
 let guideTopicStats={};
 let embeddedGuideHost=null;
 const CIRCUIT_CONST={R1:20,R2:30,R3:50,R4:20,V:10};
@@ -2556,6 +2558,7 @@ function applyGuideUiVariant(){
   document.body.classList.toggle('guide-inline', guideUiVariant==='inline');
 }
 applyGuideUiVariant();
+if(window.GUIDE_MODE==='novice'){ guideUiVariant='embedded'; applyGuideUiVariant(); }
 
 function setGuideInlineOpen(open){
   document.body.classList.toggle('guide-inline-open', !!open);
@@ -2957,16 +2960,24 @@ function renderGuideTopic(){
         <div class="guide-feedback" id="guideFlowFeedback" role="status" aria-live="polite"></div>
       `;
     } else if(st.type==='input'){
-      const prevVal = guideStepStates[i] && typeof guideStepStates[i].value==='number' ? guideStepStates[i].value : (guideStepStates[i] && typeof guideStepStates[i].draft==='string' ? guideStepStates[i].draft : '');
-      bodyHtml=`
-        <div class="guide-q-text" id="guideQuestion">${st.q}</div>
-        <div class="step-detail" id="guideHintText">${st.hint}</div>
-        <div class="guide-fill-row">
-          <input class="guide-fill-input" id="guideFillInput" inputmode="decimal" placeholder="${st.placeholder}" value="${prevVal}">
-          <button class="btn btn-secondary" onclick="checkGuideFill()" aria-label="Check your answer">Check</button>
-        </div>
-        <div class="guide-feedback" id="guideFlowFeedback" role="status" aria-live="polite"></div>
-      `;
+      if(window.GUIDE_MODE==='novice'){
+        bodyHtml=`
+          <div class="guide-q-text" id="guideQuestion">${st.q}</div>
+          <div class="step-detail" id="guideHintText">${st.hint}</div>
+        `;
+        guideStepUnlocked=true;
+      } else {
+        const prevVal = guideStepStates[i] && typeof guideStepStates[i].value==='number' ? guideStepStates[i].value : (guideStepStates[i] && typeof guideStepStates[i].draft==='string' ? guideStepStates[i].draft : '');
+        bodyHtml=`
+          <div class="guide-q-text" id="guideQuestion">${st.q}</div>
+          <div class="step-detail" id="guideHintText">${st.hint}</div>
+          <div class="guide-fill-row">
+            <input class="guide-fill-input" id="guideFillInput" inputmode="decimal" placeholder="${st.placeholder}" value="${prevVal}">
+            <button class="btn btn-secondary" onclick="checkGuideFill()" aria-label="Check your answer">Check</button>
+          </div>
+          <div class="guide-feedback" id="guideFlowFeedback" role="status" aria-live="polite"></div>
+        `;
+      }
     }
     const nextLabel = i === stepCount - 1 ? 'Done → Check the Summary' : 'Next Step →';
     const nextShow = guideStepUnlocked ? 'show' : '';
@@ -3780,14 +3791,9 @@ function renderProb(i){
       lbl.innerHTML=f.lbl;
       
       let phEl=w.querySelector('.field-placeholder');
-      if(!phEl){
-        phEl=document.createElement('div');
-        phEl.className='field-placeholder';
-        w.appendChild(phEl);
-      }
-      phEl.innerHTML=f.ph;
+      if(phEl){ phEl.remove(); }
       
-      inp.placeholder=' ';
+      inp.placeholder='';
       inp.dataset.ans=f.ans;
       inp.dataset.guideKey=guideKeys[idx]||'';
       
@@ -3822,14 +3828,16 @@ function renderProb(i){
       const isCorrect = f.status && f.status.includes('ok');
       const isLastField = (idx === totalFields - 1);
       
-      // Guide Me: show if wrong >= 1 and not correct
-      if(!isCorrect){
-         btns += `<button class="btn btn-secondary" onclick="openGuideEmbeddedFrom(this)">Guide Me</button>`;
-      }
-      
-      // Next Problem: show if correct and not last
-      if(isCorrect && !isLastField){
-         btns += `<button class="btn btn-secondary next-problem-btn" onclick="nextFieldFrom(this)">Next Problem</button>`;
+      if(window.GUIDE_MODE!=='novice'){
+        if(!isCorrect){
+           btns += `<button class="btn btn-secondary" onclick="openGuideEmbeddedFrom(this)">Guide Me</button>`;
+        }
+        if(isCorrect && !isLastField){
+           btns += `<button class="btn btn-secondary next-problem-btn" onclick="nextFieldFrom(this)">Next Problem</button>`;
+        }
+      } else {
+        if(inp){ inp.style.display='none'; }
+        btns = '';
       }
       
       actions.innerHTML = btns;
@@ -3839,6 +3847,7 @@ function renderProb(i){
   // Typeset LaTeX in the answer labels
   const answers=document.querySelector('.answers-scroll');
   if(answers) typesetMath(answers);
+  if(window.GUIDE_MODE==='novice'){ openGuideEmbedded(); }
 }
 
 function nextProb(){
