@@ -1152,27 +1152,29 @@ body.guide-summary-mode .summary-card{border:none;box-shadow:var(--sh-sm)}
 .guide-hint-list{
   display:flex;
   flex-direction:column;
-  gap:var(--space-8);
-  margin-top:var(--space-8);
+  gap:var(--space-12);
+  margin-top:var(--space-12);
 }
 .guide-hint-row{
   display:grid;
   grid-template-columns:92px 1fr;
-  align-items:baseline;
-  column-gap:var(--space-8);
+  align-items:start;
+  column-gap:var(--space-12);
 }
 .guide-hint-row .hint-text{
   font-size:12px;
   line-height:1.6;
   color:var(--text-2);
-  word-break: keep-all;
-  text-wrap: balance;
+  word-break: normal;
+  overflow-wrap: break-word;
+  padding-top:4px;
 }
+.guide-hint-row mjx-container{margin:0 6px; display:inline-block; vertical-align:baseline}
 .guide-hint-tag.formula{background:rgba(0,0,0,0.06);border-color:rgba(0,0,0,0.14);color:var(--text)}
 .guide-hint-tag.here{background:rgba(0,122,255,0.10);border-color:rgba(0,122,255,0.22);color:#0A66C2}
 .guide-hint-tag.subs{background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.22);color:#B35A00}
 .guide-hint-tag.concept{background:rgba(52,199,89,0.12);border-color:rgba(52,199,89,0.22);color:#1F8A4C}
-.guide-hint-row mjx-container{margin:0 2px}
+.guide-hint-row mjx-container{margin:0 6px}
 .hint-copy{justify-self:end;font-size:11px;color:var(--text-2);background:transparent;border:1px solid var(--border);border-radius:12px;padding:2px 8px}
 .hint-copy:hover{color:var(--text);border-color:var(--text-muted)}
 
@@ -1181,8 +1183,8 @@ body.guide-summary-mode .summary-card{border:none;box-shadow:var(--sh-sm)}
   color: var(--text-2);
   line-height: 1.65;
   white-space: normal;
-  word-break: keep-all;
-  text-wrap: balance;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 .step-detail mjx-container{margin:0 2px}
 .step-detail mjx-container svg{max-width:100%}
@@ -1429,9 +1431,7 @@ window.MathJax = {
           <button class="btn btn-ghost" style="font-size:12px" onclick="toggleDraftPad()">Close</button>
         </div>
         <textarea id="draftText" style="width:100%;height:120px;border:none;outline:none;background:transparent;color:var(--text);font-size:12px;padding:10px;resize:none"></textarea>
-        <div style="display:flex;justify-content:flex-end;gap:8px;padding:8px 10px">
-          <button class="btn btn-secondary" onclick="copyDraft()">Copy</button>
-        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;padding:8px 10px"></div>
       </div>
     </div>
 
@@ -2364,15 +2364,9 @@ function sendSketchToAI(){
   botMsg("I can see your sketch! Here's what I notice:\n\nLooks like you're working through the circuit layout. Make sure you've identified:\n\n① Which resistors are in series?\n② Which are in parallel?\n\nDoes your diagram match the problem setup?");
 }
 
-function copyHintRow(btn){
-  const row=btn.closest('.guide-hint-row');
-  if(!row) return;
-  const txt=row.querySelector('.hint-text');
-  if(!txt) return;
-  navigator.clipboard.writeText(txt.textContent).then(()=>toast('📋  Copied'));
-}
+ 
 function toggleDraftPad(){const pad=document.getElementById('draftPad');if(pad)pad.style.display=pad.style.display==='none'?'block':'none'}
-function copyDraft(){const t=document.getElementById('draftText');if(!t)return;navigator.clipboard.writeText(t.value).then(()=>toast('📋  Draft copied'))}
+ 
 function goToNextIncompleteField(){
   const fields=[...document.querySelectorAll('.answers-scroll .field-wrap .field-in')];
   const idx=fields.findIndex(f=>!f.classList.contains('ok'));
@@ -2700,13 +2694,13 @@ function renderedStepForPolicy(key,idx,st,policy){
         out.text=withExtraHint(st.text,`<span class="guide-hint-tag think">Think</span>What stays equal in parallel? Voltage. Why simplify first? It turns a branching region into one number so the series is clear.`);
       }
       if(key==='r_total' && policy.hintTier>=2){
-        out.text=withExtraHint(out.text,`<span class="guide-hint-tag check">Check</span>In parallel, \\(R_{\\mathrm{eq}}<\\min(R_2,R_3)\\). If your result is not < \\(${CIRCUIT_CONST.R2< CIRCUIT_CONST.R3?CIRCUIT_CONST.R2:CIRCUIT_CONST.R3}\\,\\Omega\\), revisit the formula.`);
+        out.text=withExtraHint(out.text,`<span class="guide-hint-tag check">Check</span>In parallel, \\(R_{\\mathrm{eq}}<\\min(R_2,R_3)\\). Do not exceed the smaller branch’s resistance.`);
       }
       if(key==='r_total' && idx===0){
         out.text=withExtraHint('You will learn: identify parallel vs series, reduce the parallel block, verify using bounds.', out.text);
       }
       if(key==='i_total' && policy.hintTier>=1){
-        out.text=withExtraHint(st.text,`<span class="guide-hint-tag frame">Frame</span>Whole‑circuit Ohm’s Law. Known: \\(V_{\\text{source}}=${CIRCUIT_CONST.V}\\,\\mathrm{V}\\), \\(R_{\\text{total}}\\). Goal: \\(I_{\\text{total}}=V/R\\).`);
+        out.text=withExtraHint(st.text,`<span class="guide-hint-tag frame">Frame</span>Whole‑circuit Ohm’s Law. Known: \\(V_{\\text{source}}\\), \\(R_{\\text{total}}\\). Goal: \\(I_{\\text{total}}=V/R\\).`);
       }
       if(key==='i_total' && policy.hintTier>=2){
         out.text=withExtraHint(out.text,`<span class="guide-hint-tag sanity">Sense</span>Larger \\(R_{\\text{total}}\\) → smaller current. Units must be Ampere (A).`);
@@ -2721,7 +2715,7 @@ function renderedStepForPolicy(key,idx,st,policy){
         out.text=withExtraHint(st.text,`<span class="guide-hint-tag concept">Concept</span>Same voltage across branches; current divides by resistance. Higher \\(R\\) → lower \\(I\\).`);
       }
       if(key==='i_r3' && policy.hintTier>=1){
-        out.text=withExtraHint(st.text,`<span class="guide-hint-tag compare">Compare</span>\\(R_3>${CIRCUIT_CONST.R2}\\,\\Omega\\) so \\(I_{R_3}<I_{R_2}\\). This helps catch swapped results.`);
+        out.text=withExtraHint(st.text,`<span class="guide-hint-tag compare">Compare</span>If \\(R_3>R_2\\), expect \\(I_{R_3}<I_{R_2}\\). This helps catch swapped results.`);
       }
       if(key==='p_total' && policy.hintTier>=1){
         out.text=withExtraHint(st.text,`<span class="guide-hint-tag frame">Frame</span>Power is “how fast energy is used.” Use source voltage with total current: \\(P=VI\\).`);
@@ -2737,7 +2731,7 @@ function renderedStepForPolicy(key,idx,st,policy){
       let hint=st.hint||'';
 
     const isCompact = policy.variant==='compact';
-    const row = (label, cls, text) => `<div class="guide-hint-row"><span class="guide-hint-tag ${cls}">${label}</span><span class="hint-text">${text}</span>${cls==='formula'?'<button class="hint-copy" onclick="copyHintRow(this)" title="Copy">Copy</button>':''}</div>`;
+    const row = (label, cls, text) => `<div class="guide-hint-row"><span class="guide-hint-tag ${cls}">${label}</span><span class="hint-text">${text}</span></div>`;
     const listWrap = rows => `<div class="guide-hint-list">${rows.join('')}</div>`;
 
       if(key==='r_total' && idx===2){
@@ -2745,9 +2739,9 @@ function renderedStepForPolicy(key,idx,st,policy){
       if(isCompact){
         hint = listWrap([row('Formula','formula',fText), row('Concept','concept','\\(R_{\\mathrm{eq}}<\\min(R_2,R_3)\\)')]);
       } else {
-        const hText='\\(\\dfrac{30\\cdot50}{30+50}\\)';
-        const sText=`\\(R_2=${CIRCUIT_CONST.R2}\\,\\Omega\\), \\(R_3=${CIRCUIT_CONST.R3}\\,\\Omega\\)`;
-        const cText=`\\(R_{\\mathrm{eq}}<${CIRCUIT_CONST.R2< CIRCUIT_CONST.R3?CIRCUIT_CONST.R2:CIRCUIT_CONST.R3}\\,\\Omega\\)`;
+        const hText='Use your given \\(R_2, R_3\\) to substitute; keep symbols until you compute.';
+        const sText='Substitute your own \\(R_2, R_3\\) values without showing numeric steps here.';
+        const cText='Verify \\(R_{\\mathrm{eq}}<\\min(R_2,R_3)\\).';
         const rows=[row('Formula','formula',fText)];
         if(policy.variant==='supportive' || policy.hintTier>=1) rows.push(row('Here','here',hText));
         if(policy.variant==='supportive' || policy.hintTier>=2) rows.push(row('Substitute','subs',sText), row('Concept','concept',cText));
@@ -2759,7 +2753,7 @@ function renderedStepForPolicy(key,idx,st,policy){
       if(isCompact){
         hint = listWrap([row('Formula','formula',fText)]);
       } else {
-        const sText=`\\(R_1=${CIRCUIT_CONST.R1}\\,\\Omega\\), \\(R_4=${CIRCUIT_CONST.R4}\\,\\Omega\\)`;
+        const sText='Substitute your \\(R_1, R_4\\) together with \\(R_{\\mathrm{eq}}\\).';
         const rows=[row('Formula','formula',fText)];
         if(policy.variant==='supportive' || policy.hintTier>=2) rows.push(row('Substitute','subs',sText), row('Concept','concept','Total must exceed each single resistor.'));
         hint = listWrap(rows);
@@ -2770,7 +2764,7 @@ function renderedStepForPolicy(key,idx,st,policy){
       if(isCompact){
         hint = listWrap([row('Formula','formula',fText)]);
       } else {
-        const kText=`\\(V_{\\text{source}}=${CIRCUIT_CONST.V}\\,\\mathrm{V}\\)`;
+        const kText='Use your \\(V_{\\text{source}}\\) and computed \\(R_{\\text{total}}\\).';
         const rows=[row('Formula','formula',fText)];
         if(policy.variant==='supportive' || policy.hintTier>=1) rows.push(row('Known','here',kText));
         if(policy.variant==='supportive' && policy.hintTier>=2) rows.push(row('Concept','concept','Units: A. Larger \\(R_{\\text{total}}\\) → smaller \\(I\\).'));
@@ -3154,8 +3148,8 @@ function getGuideRecap(key, policy){
   if(key==='i_total'){
     return mk('You got it! Here’s a quick recap of the key ideas:', adjustItems([
       {t:'Equivalent Circuit First',d:'Get the total resistance R_total from previous steps.'},
-      {t:'Use Ohm’s Law',d:'\\(I_{\\text{total}}=\\dfrac{V_{\\text{source}}}{R_{\\text{total}}}\\) (here \\(V_{\\text{source}}=10\\,\\mathrm{V}\\)).'},
-      {t:'Plug In Values',d:'Use your computed R_total with the source voltage.'},
+      {t:'Use Ohm’s Law',d:'\\(I_{\\text{total}}=\\dfrac{V_{\\text{source}}}{R_{\\text{total}}}\\).'},
+      {t:'Plug In Values',d:'Use your computed \\(R_{\\text{total}}\\) with the source voltage \\(V_{\\text{source}}\\).'},
       {t:'Unit Check',d:'Current is measured in amperes (A).'}
     ]));
   }
@@ -3240,18 +3234,12 @@ function guideRecapPageHtml(key,policy){
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:12px">
         <button class="btn btn-secondary" onclick="ackGuideRecap()">Review another item</button>
-        <button class="btn btn-ghost" style="margin-left:8px" onclick="copyGuideSummary()">Copy Summary</button>
       </div>
     </div>
   `;
 }
 
-function copyGuideSummary(){
-  const box=document.getElementById('guideContent');
-  if(!box) return;
-  const txt=box.innerText.trim();
-  navigator.clipboard.writeText(txt).then(()=>toast('📋  Summary copied'));
-}
+ 
 function showGuideSummary(){
   const topic=GUIDE_TOPICS[guideActiveKey];
   const container=guideStepsEl();

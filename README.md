@@ -141,13 +141,12 @@ Code references:
 
 ## Draft Pad
 - **Quick notes**: Dedicated area for quick calculations and notes during problem solving.
-- **One-click copy**: Copy all content with a single click for easy sharing or reference.
 - **Persistent**: Content persists during the session for reference across problems.
 
 ## Learning Summary
-- **Export functionality**: Copy learning summary to clipboard with one click.
+- **View-only**: Summary is viewable inside the app (no clipboard export).
 - **Progress tracking**: Automatically tracks completed problems and learning steps.
-- **Shareable**: Summary can be shared or saved for review purposes.
+- **Reviewable**: Designed for end-of-session reflection and review.
 
 ## Canvas System
 - **Tools**: Pen, line, rectangle, circle, text input, select, and eraser.
@@ -171,8 +170,14 @@ Code references:
 ## File Map
 - `index.html`: Main SPA, layout, logic, guidance, modals, progress, confetti.
 - `config.js`: Config and shared utilities.
-- `dom-utils.js`: DOM manager helpers.
+- `dom-utils.js`: DOM manager helpers and EventBus.
 - `state.js`: Simple state container.
+- `canvas.js`: Canvas/SVG drawing module (tools, pen pressure, smoothing).
 - `README.md`: This design document.
 - `RULES.md`: Team/process rules (to be defined by you).
 - `TODO.md`: Task list for next actions (to be defined by you).
+
+## Guide Me Policies
+- **Advanced**: Compact hints, no concrete numbers or final answers, focus on formulas/keywords.
+- **Novice**: Supportive steps with LaTeX, strict horizontal alignment, concept scaffolds and verification tips, no direct substitution on behalf of the user.
+- **Formatting**: Uses -apple-system font and 8pt grid; MathJax for math; avoids punctuation at line start.
