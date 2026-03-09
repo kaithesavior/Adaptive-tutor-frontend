@@ -1,0 +1,3986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adaptive Homework Tutor</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --surface-2: #f8f9fc;
+  --border: #e2e8f0;
+  --border-2: #dbe0ea;
+  --text: #1e293b;
+  --text-2: #475569;
+  --text-muted: #94a3b8;
+  --primary: #007AFF;
+  --primary-dark: #0062cc;
+  --blue: #3d6ce8;
+  --blue-dark: #3056bf;
+  --blue-light: #eff4ff;
+  --red: #ef4444;
+  --red-light: #fef2f2;
+  --green: #10b981;
+  --green-light: #ecfdf5;
+  --orange: #f97316;
+  --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-2xl: 24px;
+  
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  
+  --sh-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --sh-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --sh-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+button{font-family:var(--font);cursor:pointer;border:none;background:none}
+svg{display:block;flex-shrink:0}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:10px}
+
+/* TOPBAR */
+.topbar{height:52px;display:flex;align-items:center;padding:0 18px;gap:0;background:var(--surface);border-bottom:1.5px solid var(--border);z-index:50;flex-shrink:0;box-shadow:var(--sh-xs)}
+.logo-wrap{display:flex;align-items:center;gap:10px;padding-right:16px;border-right:1.5px solid var(--border);height:100%}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--blue) 0%,#5b87f0 100%);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(61,108,232,0.30)}
+.logo-text h1{font-size:13px;font-weight:800;letter-spacing:-0.02em;line-height:1.2;color:var(--text)}
+.logo-text p{font-size:9px;font-weight:600;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:1px}
+.todo-trigger{width:36px;height:36px;margin-left:14px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surface);display:flex;align-items:center;justify-content:center;transition:all 0.15s;position:relative;flex-shrink:0;color:var(--text-2)}
+.todo-trigger:hover{background:var(--blue-light);border-color:var(--blue);color:var(--blue);transform:translateY(-1px);box-shadow:var(--sh-sm)}
+.badge{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;background:var(--orange);color:#fff;font-size:8.5px;font-weight:800;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);border:2px solid var(--surface);animation:badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes badge-pop{from{transform:scale(0)}to{transform:scale(1)}}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.progress-label{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:0.04em}
+.progress-track{width:110px;height:8px;background:var(--border);border-radius:10px;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),#60a5fa);border-radius:10px;transition:width 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+.progress-count{font-size:12px;font-weight:800;color:var(--text);font-family:var(--mono);min-width:30px;text-align:right}
+
+/* LAYOUT */
+.app-body{display:flex;height:calc(100vh - 52px);overflow:hidden}
+
+/* LEFT */
+.left{width:560px;min-width:260px;max-width:calc(100% - 260px);background:var(--surface);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+
+/* DIVIDER */
+.divider{width:6px;min-width:6px;background:var(--border);cursor:col-resize;position:relative;flex-shrink:0;transition:background 0.15s;z-index:10;display:flex;align-items:center;justify-content:center}
+.divider:hover,.divider.dragging{background:var(--blue)}
+.divider::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:32px;border-radius:2px;background:rgba(255,255,255,0.8);opacity:0;transition:opacity 0.15s}
+.divider:hover::after,.divider.dragging::after{opacity:1}
+.divider::before{content:'';position:absolute;inset:0 -6px}
+
+/* CENTER GUIDE */
+.center-guide{width:440px;min-width:260px;max-width:55%;background:var(--surface);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+
+/* PROB HEAD */
+.prob-head{padding:18px 22px 14px;border-bottom:1.5px solid var(--border);flex-shrink:0;position:relative}
+.prob-head h2{font-size:15px;font-weight:800;letter-spacing:-0.02em;margin-bottom:8px;color:var(--text);padding-right:120px}
+.prob-head p{font-size:11.5px;font-family:var(--mono);color:var(--text-muted);line-height:1.65}
+.prob-nav{position:absolute;top:18px;right:22px;display:flex;gap:6px}
+.prob-num{
+  width:26px;height:26px;border-radius:6px;background:var(--surface-2);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11.5px;font-weight:700;color:var(--text-2);font-family:var(--mono);
+  cursor:pointer;transition:all 0.15s;
+}
+.prob-num:hover{background:var(--border);color:var(--text)}
+.prob-num.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 6px rgba(61,108,232,0.3)}
+.prob-num.done{border-color:var(--green);color:var(--green);background:var(--green-light)}
+.prob-num.active.done{background:var(--green);color:#fff;border-color:var(--green)}
+.prob-indicator{margin-top:4px;font-size:10px;font-weight:800;color:var(--blue);background:var(--blue-light);border:1px solid var(--border);display:inline-block;border-radius:999px;padding:2px 8px}
+.prob-indicator-tray{display:flex;align-items:center;gap:6px}
+.btn-ico{width:24px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:transparent;color:var(--text-muted);border:1px solid var(--border);transition:all 0.12s}
+.btn-ico:hover{background:var(--blue-light);color:var(--blue);border-color:var(--blue)}
+
+/* CIRCUIT */
+.circuit-section{padding:14px 22px;border-bottom:1.5px solid var(--border);flex-shrink:0}
+.circuit-card{background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:12px;display:flex;align-items:center;justify-content:center}
+
+/* ANSWERS */
+.answers-scroll{flex:1;overflow-y:auto;padding:14px 22px}
+.instruction{font-size:11.5px;font-family:var(--mono);color:var(--text-2);line-height:1.7;margin-bottom:14px;padding:10px 12px;background:var(--blue-light);border-radius:var(--r-sm);border-left:3px solid var(--blue)}
+.instruction{position:relative;padding-right:28px}
+.instruction-close{position:absolute;right:6px;top:6px;width:18px;height:18px;border-radius:6px;background:transparent;color:var(--text-muted);display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1;border:1px solid var(--border);transition:all 0.12s}
+.instruction-close:hover{background:var(--blue-light);color:var(--blue);border-color:var(--blue)}
+.field-wrap{margin-bottom:10px;position:relative}
+.field-lbl{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-2);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.field-in{width:100%;height:38px;padding:0 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--mono);font-size:12.5px;color:var(--text);background:var(--surface-2);outline:none;transition:border-color 0.15s,background 0.15s,box-shadow 0.15s,transform 0.1s}
+.field-in:focus{border-color:var(--blue);background:var(--surface);box-shadow:0 0 0 3px rgba(61,108,232,0.12);transform:translateY(-1px)}
+.field-in.ok{border-color:var(--green);background:var(--green-light);box-shadow:0 0 0 3px rgba(24,145,106,0.10)}
+.field-in.err{border-color:var(--red);background:var(--red-light);box-shadow:0 0 0 3px rgba(212,76,58,0.10);animation:shake 0.3s ease}
+.field-placeholder{position:absolute;left:14px;top:18px;height:38px;display:flex;align-items:center;color:#9ca3af;pointer-events:none;font-size:12.5px;opacity:1;transition:opacity 0.2s}
+.field-in:focus ~ .field-placeholder,
+.field-in:not(:placeholder-shown) ~ .field-placeholder{opacity:0;visibility:hidden}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* BUTTONS */
+.btn-row{padding:12px 22px;border-top:1.5px solid var(--border);display:flex;gap:8px;flex-shrink:0;align-items:center}
+.btn{height:36px;padding:0 16px;border-radius:var(--r-md);font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;transition:all 0.15s;flex-shrink:0}
+.btn-primary{background:linear-gradient(135deg,var(--blue) 0%,#5b87f0 100%);color:#fff;box-shadow:0 2px 8px rgba(61,108,232,0.30)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(61,108,232,0.40)}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{background:var(--surface);color:var(--text);border:1.5px solid var(--border)}
+.btn-secondary:hover{background:var(--blue-light);border-color:var(--blue);color:var(--blue);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text-muted)}
+.btn-ghost:hover{background:var(--border);color:var(--text);border-radius:var(--r-md)}
+.btn-row-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.field-feedback{margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-size:12px;color:var(--text-2)}
+.field-feedback.ok{border-color:var(--green);color:var(--green)}
+.field-feedback.err{border-color:var(--red);color:var(--red)}
+.field-actions{display:flex;gap:8px;margin-top:8px}
+
+/* RIGHT */
+.right{flex:1;display:flex;flex-direction:column;background:#edeae2;position:relative;overflow:hidden;min-width:0}
+
+/* TOOLBAR */
+.draw-tb{height:48px;background:var(--surface);border-bottom:1.5px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:2px;flex-shrink:0;box-shadow:var(--sh-xs);overflow-x:auto}
+.draw-tb::-webkit-scrollbar{display:none}
+.draw-tb.dragging{cursor:grabbing;cursor:-webkit-grabbing}
+.tb-btn{width:34px;height:34px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--text-2);transition:all 0.12s;flex-shrink:0}
+.tb-btn:hover{background:var(--blue-light);color:var(--blue);transform:translateY(-1px)}
+.tb-btn.on{background:var(--blue);color:#fff;box-shadow:0 2px 6px rgba(61,108,232,0.35)}
+.tb-btn.on:hover{background:var(--blue-dark);transform:translateY(-1px)}
+.tb-sep{width:1.5px;height:22px;background:var(--border);margin:0 5px;flex-shrink:0}
+.tb-color{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--surface);outline:2px solid transparent;cursor:pointer;transition:transform 0.12s,outline-color 0.12s,box-shadow 0.12s;flex-shrink:0;margin:0 2px}
+.tb-color:hover{transform:scale(1.25);box-shadow:var(--sh-sm)}
+.tb-color.on{outline-color:var(--blue);transform:scale(1.15)}
+.tb-size{height:26px;padding:0 9px;border-radius:var(--r-xs);border:1.5px solid var(--border);background:var(--surface);font-size:10.5px;font-weight:800;color:var(--text-muted);font-family:var(--mono);transition:all 0.12s;flex-shrink:0}
+.tb-size:hover{background:var(--border);color:var(--text)}
+.tb-size.on{background:var(--blue-light);border-color:var(--blue);color:var(--blue)}
+.tb-right{margin-left:auto;display:flex;gap:2px;align-items:center}
+/* Make zoom percentage clickable for quick cycling */
+.tb-right #zoomLevel{cursor:pointer}
+
+/* CANVAS */
+.canvas-wrap{flex:1;position:relative;overflow:hidden;background-image:linear-gradient(rgba(150,145,138,0.18) 1px,transparent 1px),linear-gradient(90deg,rgba(150,145,138,0.18) 1px,transparent 1px);background-size:24px 24px;background-color:#edeae2}
+.canvas-wrap canvas{position:absolute;inset:0;touch-action:none}
+.svg-layer{position:absolute;inset:0;pointer-events:none}
+.canvas-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;transition:opacity 0.25s;gap:8px}
+.canvas-hint.gone{opacity:0}
+.hint-icon{color:#c4bfb5}
+.canvas-hint p{font-size:13px;font-weight:700;color:#c4bfb5;font-family:var(--mono)}
+.canvas-hint small{font-size:10.5px;color:#ccc8be}
+
+/* Dynamic type & dark theme */
+html{font-size:clamp(14px,1vw+12px,17px)}
+
+/* CHAT FAB - Ensure only one exists and is positioned correctly */
+.chat-fab{position:fixed;bottom:20px;right:20px;background:#007AFF;color:#fff;border:none;border-radius:980px;padding:10px 18px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,122,255,0.3);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;letter-spacing:-0.01em;transition:all 0.2s ease}
+.chat-fab:hover{background:#0062cc;transform:scale(1.02);box-shadow:0 6px 16px rgba(0,122,255,0.4)}
+
+/* TODO DRAWER */
+.drawer-veil{position:fixed;inset:0;background:rgba(30,27,22,0.22);z-index:100;opacity:0;pointer-events:none;transition:opacity 0.2s;backdrop-filter:blur(2px)}
+.drawer-veil.open{opacity:1;pointer-events:all}
+.todo-drawer{position:fixed;top:0;left:0;width:300px;height:100%;background:var(--surface);border-right:1.5px solid var(--border);z-index:101;transform:translateX(-100%);transition:transform 0.26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:var(--sh-lg)}
+.todo-drawer.open{transform:translateX(0)}
+.drawer-head{height:52px;padding:0 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--surface-2)}
+.drawer-head h3{font-size:13.5px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
+.drawer-close{width:28px;height:28px;border-radius:var(--r-xs);font-size:18px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:all 0.12s}
+.drawer-close:hover{background:var(--border);color:var(--text)}
+.todo-scroll{flex:1;overflow-y:auto;padding:12px 14px}
+.todo-group{margin-bottom:18px}
+.todo-group-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:6px;padding:0 6px}
+.todo-item{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:var(--r-md);cursor:pointer;border:1.5px solid transparent;transition:all 0.15s;margin-bottom:3px}
+.todo-item:hover{background:var(--blue-light);border-color:var(--border)}
+.todo-item:active{transform:scale(0.98)}
+.todo-item.done .todo-item-text{text-decoration:line-through;color:var(--text-muted)}
+.todo-cb{width:18px;height:18px;flex-shrink:0;margin-top:1px;border:2px solid var(--border-2);border-radius:5px;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.todo-item.done .todo-cb{background:var(--green);border-color:var(--green);color:#fff}
+.todo-item-text{font-size:12.5px;font-weight:600;line-height:1.4}
+.todo-item-meta{font-size:10px;color:var(--text-muted);margin-top:2px;font-weight:500}
+.tag{display:inline-flex;align-items:center;padding:1px 6px;border-radius:4px;font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;margin-left:5px;vertical-align:middle}
+.tag-due{background:var(--orange-light);color:var(--orange)}
+.tag-hw{background:var(--blue-light);color:var(--blue)}
+.tag-chi{background:var(--purple-light);color:var(--purple)}
+.drawer-add{padding:12px 14px;border-top:1.5px solid var(--border);display:flex;gap:7px;flex-shrink:0;background:var(--surface-2)}
+.drawer-add input{flex:1;height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:12px;font-family:var(--font);outline:none;background:var(--surface);transition:border-color 0.12s}
+.drawer-add input:focus{border-color:var(--blue)}
+.drawer-add-btn{width:34px;height:34px;background:var(--blue);color:#fff;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.12s}
+.drawer-add-btn:hover{background:var(--blue-dark);transform:scale(1.05)}
+
+/* UNIFIED TUTOR PANEL */
+.tutor-panel {
+  position: fixed;
+  bottom: 82px;
+  right: 20px;
+  width: 380px;
+  height: 520px;
+  min-width: 320px;
+  min-height: 400px;
+  max-width: 90vw;
+  max-height: 85vh;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-lg);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  transform-origin: bottom right;
+  transform: scale(0.9) translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), opacity 0.2s;
+  overflow: hidden;
+}
+.tutor-panel.open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+.chat-resize-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  background: repeating-linear-gradient(135deg, var(--border) 0 2px, transparent 2px 4px);
+  opacity: 0.7;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  z-index: 2;
+}
+.tutor-head {
+  height: 50px;
+  background: var(--surface);
+  border-bottom: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+.tutor-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 4px;
+  height: 100%;
+  align-items: center;
+}
+.tutor-tab {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+  position: relative;
+}
+.tutor-tab:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.tutor-tab.active {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+.tutor-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 12px;
+  right: 12px;
+  height: 3px;
+  background: var(--blue);
+  border-radius: 3px 3px 0 0;
+}
+.tutor-actions {
+  display: flex;
+  gap: 4px;
+  padding-right: 8px;
+}
+.tutor-icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all 0.12s;
+}
+.tutor-icon-btn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+.tutor-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+}
+.tutor-view {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+}
+.tutor-view.active {
+  display: flex;
+  animation: fade-in 0.2s ease;
+}
+@keyframes fade-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* CHAT VIEW - RESTORED */
+.chat-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.msg {
+  display: flex;
+  gap: 7px;
+  align-items: flex-end;
+}
+.msg.user {
+  flex-direction: row-reverse;
+}
+.msg-bub {
+  max-width: 80%;
+  padding: 9px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-line;
+  font-weight: 500;
+}
+.msg.bot .msg-bub {
+  background: var(--blue-light);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+.msg.user .msg-bub {
+  background: var(--blue);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.msg-av {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #6d9cf8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  padding: 4px 2px;
+}
+.dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  animation: dot-up 0.9s ease infinite;
+}
+.dots span:nth-child(2) { animation-delay: 0.15s; }
+.dots span:nth-child(3) { animation-delay: 0.30s; }
+@keyframes dot-up { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; } 40% { transform: translateY(-5px); opacity: 1; } }
+
+.quick-chips {
+  padding: 0 12px 9px;
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.chip {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-2);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.chip:hover {
+  background: var(--blue-light);
+  border-color: var(--blue);
+  color: var(--blue);
+  transform: translateY(-1px);
+}
+.chat-foot {
+  padding: 9px 11px;
+  border-top: 1.5px solid var(--border);
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-shrink: 0;
+  background: var(--surface);
+}
+.chat-in {
+  flex: 1;
+  min-height: 34px;
+  max-height: 78px;
+  padding: 7px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-family: var(--font);
+  font-weight: 500;
+  resize: none;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.chat-in:focus {
+  border-color: var(--blue);
+}
+.chat-send {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  background: var(--blue);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.12s;
+}
+.chat-send:hover {
+  background: var(--blue-dark);
+  transform: scale(1.06);
+}
+
+/* GUIDE VIEW - ADAPTED */
+.guide-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.guide-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--surface);
+}
+.guide-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  background: var(--blue-light);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.guide-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.inline-guide-panel{
+  display:none;
+  margin-top:12px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  background:var(--surface);
+  box-shadow:var(--sh-sm);
+}
+.inline-guide-panel.open{display:block}
+.inline-guide-panel .guide-container{height:auto}
+.inline-guide-panel .guide-content{max-height:none}
+.inline-guide-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.inline-guide-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.inline-guide-title{
+  font-size:12px;
+  font-weight:900;
+  color:var(--text);
+  letter-spacing:0.02em;
+  text-transform:uppercase;
+}
+body.guide-inline #tab-guide,
+body.guide-inline #view-guide{display:none}
+/* Center guide visibility control */
+.center-guide{display:none;overflow-y:auto}
+#dividerGR{display:none}
+body.guide-inline-open .center-guide{display:flex}
+body.guide-inline-open #dividerGR{display:flex}
+body.guide-pick .field-in{
+  cursor:pointer;
+}
+body.guide-pick .field-wrap:hover .field-in{
+  border-color:var(--blue);
+  box-shadow:var(--sh-sm);
+}
+.field-in.guide-selected{
+  border-color:var(--green);
+  box-shadow:var(--sh-sm);
+}
+.guide-pick-card{
+  padding:14px;
+  background:var(--blue-light);
+  border-radius:var(--r-md);
+  border-left:4px solid var(--blue);
+}
+.guide-pick-title{
+  font-size:13px;
+  font-weight:800;
+  margin-bottom:6px;
+}
+.guide-pick-sub{
+  font-size:12px;
+  color:var(--text-2);
+  line-height:1.5;
+}
+.guide-flow-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:8px 12px;
+  margin:4px 0 8px;
+}
+.guide-flow-title{
+  font-size:13px;
+  font-weight:800;
+}
+.guide-step-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:11px;
+  font-weight:800;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+}
+.guide-fill-row{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+.guide-fill-input{
+  flex:1;
+  height:34px;
+  padding:0 10px;
+  border:1.5px solid var(--border);
+  border-radius:var(--r-sm);
+  font-size:12px;
+  font-family:var(--font);
+  outline:none;
+  background:var(--surface);
+  transition:border-color 0.12s;
+}
+.guide-fill-input:focus{
+  border-color:var(--blue);
+}
+/* Ensure step styling works in new context */
+.guide-step {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  background: var(--surface);
+  border: none;
+  border-radius: 8px;
+  box-shadow: var(--sh-sm);
+  transition: all 0.2s;
+}
+.guide-step:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+.step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-body { flex: 1; }
+.step-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.step-detail {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+/* Interactive Guide Styles override */
+.interactive-guide {
+  padding: 0;
+  height: auto; /* Let flex handle it */
+}
+.guide-q-card {
+  background: var(--surface);
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: var(--sh-sm);
+}
+.guide-next-btn {
+  margin-top: 16px;
+  width: 100%;
+  padding: 10px;
+  font-size: 13px;
+}
+/* Embedded guide under a field */
+.embedded-guide{
+  display:none;
+  margin-top:10px;
+  border:none;
+  border-radius:12px;
+  overflow:hidden;
+  background:var(--surface);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.10);
+}
+.embedded-guide.open{display:block}
+.embedded-guide .guide-container{height:auto}
+.embedded-guide .guide-content{max-height:none;overflow:visible;padding:12px}
+.embedded-guide .interactive-guide{padding:12px}
+/* Guide MCQ options styled buttons */
+.guide-q-opts{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.guide-opt{
+  width:100%;
+  text-align:left;
+  padding:10px 12px;
+  border:1.5px solid var(--border);
+  border-radius:8px;
+  background:#fff;
+  color:var(--text);
+  font-weight:700;
+  transition:all .12s;
+}
+.guide-opt:hover{border-color:var(--blue);box-shadow:var(--sh-sm)}
+.guide-opt.correct{
+  background:var(--green);
+  border-color:var(--green);
+  color:#fff;
+  position:relative;
+}
+.guide-opt.correct::after{
+  content:'✓';
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  font-weight:900;
+}
+/* Guide feedback with trailing icon on the right */
+.guide-feedback{
+  display:none;
+  margin-top:10px;
+  padding:8px 10px;
+  font-size:12px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--surface);
+  color:var(--text-2);
+  align-items:center;
+  justify-content:space-between;
+}
+.guide-feedback.show{display:flex}
+.guide-feedback::after{
+  content:'';
+  margin-left:8px;
+  font-weight:800;
+}
+.guide-feedback.ok{color:var(--green);border-color:var(--green)}
+.guide-feedback.ok::after{content:'✓';color:var(--green)}
+.guide-feedback.err{color:var(--red);border-color:var(--red)}
+.guide-feedback.err::after{content:'✕';color:var(--red)}
+/* Summary page integrates with middle panel: remove outer borders */
+body.guide-summary-mode .interactive-guide{gap:12px}
+body.guide-summary-mode .guide-step{border:none;background:transparent;box-shadow:none;padding:0}
+body.guide-summary-mode .guide-step:hover{border:none;box-shadow:none}
+body.guide-summary-mode .guide-summary{border:none;background:transparent;padding:0}
+body.guide-summary-mode .summary-card{border:none;box-shadow:var(--sh-sm)}
+/* Ask AI tool: dashed border with input */
+#askBox {
+  position: absolute;
+  border: 2px dashed var(--blue);
+  background: rgba(61,108,232,0.08);
+  border-radius: 3px;
+  pointer-events: none;
+  display: none;
+  box-sizing: border-box;
+  z-index: 50; /* Increased z-index to be above canvas */
+}
+.ask-input-wrap {
+  position: absolute;
+  bottom: -46px;
+  left: 0;
+  min-width: 240px;
+  background: var(--surface);
+  border: 1.5px solid var(--blue);
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  animation: fade-in 0.2s;
+  z-index: 51; /* Ensure input is clickable */
+}
+.ask-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: var(--font);
+  outline: none;
+  padding: 0 4px;
+  min-width: 0;
+  color: var(--text);
+}
+.ask-send-btn {
+  width: 28px;
+  height: 28px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.1s;
+}
+.ask-send-btn:hover {
+  background: var(--blue-dark);
+  transform: scale(1.05);
+}
+
+/* Customize Settings Modal */
+.settings-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  visibility: hidden; /* Added visibility control */
+}
+.settings-modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+  visibility: visible;
+}
+.settings-modal {
+  width: 800px;
+  height: 540px;
+  max-width: 95vw;
+  max-height: 90vh;
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+}
+.settings-modal-overlay.open .settings-modal { transform: scale(1); }
+.settings-header {
+  height: 56px;
+  padding: 0 24px;
+  border-bottom: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.settings-header h2 { font-size: 18px; font-weight: 800; }
+.settings-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+.settings-sidebar {
+  width: 200px;
+  background: var(--surface-2);
+  border-right: 1.5px solid var(--border);
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.settings-nav-item {
+  padding: 10px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.settings-nav-item:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+.settings-nav-item.active {
+  background: #fff;
+  border-left-color: var(--blue);
+  color: var(--blue);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.settings-content {
+  flex: 1;
+  padding: 24px 32px;
+  overflow-y: auto;
+}
+.settings-preview-pane {
+  width: 280px;
+  background: var(--surface-2);
+  border-left: 1.5px solid var(--border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.preview-card {
+  background: #fff;
+  border-radius: var(--r-lg);
+  padding: 16px;
+  box-shadow: var(--sh-sm);
+  border: 1px solid var(--border);
+}
+.preview-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.preview-text {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.setting-section { display: none; flex-direction: column; gap: 24px; }
+.setting-section.active { display: flex; animation: fade-in 0.2s; }
+.setting-group { display: flex; flex-direction: column; gap: 8px; }
+.setting-group label { font-size: 13px; font-weight: 700; color: var(--text); }
+.range-wrap { display: flex; align-items: center; gap: 12px; }
+.range-wrap input { flex: 1; accent-color: var(--blue); }
+.range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.modal-footer {
+  height: 60px;
+  border-top: 1.5px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+}
+
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.3);
+  backdrop-filter:blur(2px);
+  z-index:10000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.2s;
+  visibility:hidden;
+}
+.modal-overlay.open{
+  opacity:1;
+  pointer-events:all;
+  visibility:visible;
+}
+.modal{
+  width:480px;
+  max-width:92vw;
+  max-height:90vh;
+  background:var(--surface);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-lg);
+  overflow:hidden;
+  transform:scale(0.95);
+  transition:transform 0.2s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-head{
+  height:54px;
+  padding:0 18px;
+  border-bottom:1.5px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.modal-head h3{font-size:16px;font-weight:900}
+.modal-close{
+  width:32px;
+  height:32px;
+  border-radius:8px;
+  color:var(--text-muted);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1.5px solid var(--border);
+}
+.modal-close:hover{background:var(--border);color:var(--text)}
+
+/* Text input on canvas */
+.canvas-text-input {
+  position: absolute;
+  background: transparent;
+  border: 1px dashed var(--blue);
+  outline: none;
+  padding: 0;
+  margin: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  z-index: 100;
+  min-width: 50px;
+  line-height: 1;
+}
+/* Interactive Guide (High Stress) */
+.interactive-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+.guide-q-card {
+  background: var(--surface);
+  padding: var(--space-16);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+}
+.guide-q-text {
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: var(--space-8);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+.guide-q-opts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.guide-opt {
+  padding: 10px var(--space-12);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  font-size: 12.5px;
+  font-weight: 650;
+  text-align: left;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Knowledge Summary Styles */
+.guide-summary {
+  padding: 20px;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  border: none;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-sm);
+}
+
+.summary-icon {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--blue);
+  min-width: 24px;
+  text-align: center;
+}
+
+.summary-body {
+  flex: 1;
+}
+
+.summary-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.summary-detail {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.summary-detail code {
+  background: var(--surface);
+  padding: 2px 4px;
+  border-radius: var(--r-sm);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  border: 1px solid var(--border);
+}
+.guide-opt:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: rgba(0,122,255,0.06);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.07);
+}
+.guide-opt.correct {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+.guide-opt.wrong {
+  background: var(--red-light);
+  border-color: var(--red);
+  color: var(--red);
+}
+.guide-feedback {
+  margin-top: var(--space-8);
+  font-size: 12px;
+  line-height: 1.55;
+  padding: 10px var(--space-12);
+  background: rgba(0,0,0,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  display: none;
+}
+.guide-feedback.show { display: block; animation: badge-pop 0.3s ease; }
+.guide-next-btn {
+  margin-top: var(--space-12);
+  width: 100%;
+  height: 40px;
+  display: none;
+}
+.guide-next-btn.show { display: block; }
+.btn:focus-visible{outline: none; box-shadow: 0 0 0 2px rgba(0,122,255,0.3), 0 0 0 4px rgba(0,122,255,0.15)}
+.btn-primary{background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(0,122,255,0.30)}
+.btn-primary:hover{background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,122,255,0.40)}
+.btn-primary:active{transform: translateY(0) scale(0.99)}
+.btn-secondary{background: var(--surface); color: var(--text); border: 1.5px solid var(--border)}
+.btn-secondary:hover{background: var(--blue-light); border-color: var(--blue); color: var(--blue); transform: translateY(-1px)}
+.btn-ghost{background: transparent; color: var(--text-muted)}
+.btn-ghost:hover{background: var(--border); color: var(--text)}
+
+.guide-hint-gap{height:10px}
+.guide-hint-tag{
+  display:inline-flex;
+  align-items:center;
+  height:18px;
+  padding:0 8px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  margin-right:8px;
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text-muted);
+  vertical-align:middle;
+}
+.guide-hint-tag.think{background:rgba(0,122,255,0.10);border-color:rgba(0,122,255,0.22);color:#0A66C2}
+.guide-hint-tag.check{background:rgba(52,199,89,0.12);border-color:rgba(52,199,89,0.22);color:#1F8A4C}
+.guide-hint-tag.frame{background:rgba(88,86,214,0.10);border-color:rgba(88,86,214,0.22);color:#3D3AE6}
+.guide-hint-tag.idea{background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.22);color:#B35A00}
+.guide-hint-tag.concept{background:rgba(175,82,222,0.12);border-color:rgba(175,82,222,0.22);color:#7B3AA7}
+.guide-hint-tag.compare{background:rgba(255,59,48,0.10);border-color:rgba(255,59,48,0.18);color:#C62828}
+.guide-hint-tag.sanity{background:rgba(142,142,147,0.10);border-color:rgba(142,142,147,0.22);color:var(--text-2)}
+
+.guide-hint-list{
+  display:flex;
+  flex-direction:column;
+  gap:var(--space-8);
+  margin-top:var(--space-8);
+}
+.guide-hint-row{
+  display:grid;
+  grid-template-columns:92px 1fr;
+  align-items:baseline;
+  column-gap:var(--space-8);
+}
+.guide-hint-row .hint-text{
+  font-size:12px;
+  line-height:1.6;
+  color:var(--text-2);
+  word-break: keep-all;
+  text-wrap: balance;
+}
+.guide-hint-tag.formula{background:rgba(0,0,0,0.06);border-color:rgba(0,0,0,0.14);color:var(--text)}
+.guide-hint-tag.here{background:rgba(0,122,255,0.10);border-color:rgba(0,122,255,0.22);color:#0A66C2}
+.guide-hint-tag.subs{background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.22);color:#B35A00}
+.guide-hint-tag.concept{background:rgba(52,199,89,0.12);border-color:rgba(52,199,89,0.22);color:#1F8A4C}
+.guide-hint-row mjx-container{margin:0 2px}
+.hint-copy{justify-self:end;font-size:11px;color:var(--text-2);background:transparent;border:1px solid var(--border);border-radius:12px;padding:2px 8px}
+.hint-copy:hover{color:var(--text);border-color:var(--text-muted)}
+
+.step-detail{
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.65;
+  white-space: normal;
+  word-break: keep-all;
+  text-wrap: balance;
+}
+.step-detail mjx-container{margin:0 2px}
+.step-detail mjx-container svg{max-width:100%}
+@media (prefers-reduced-motion: reduce){
+  *{animation: none !important; transition: none !important}
+}
+/* Attached file preview in chat */
+.msg-attachment{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.2);border-radius:6px;padding:5px 8px;font-size:10.5px;margin-bottom:4px}
+.msg-attachment svg{flex-shrink:0}
+/* Apple-style Button */
+.btn-apple {
+  background: #007AFF;
+  color: #fff;
+  border: none;
+  border-radius: 980px;
+  padding: 12px 36px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+  letter-spacing: -0.01em;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+.btn-apple:hover {
+  background: #0062cc;
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+}
+.btn-apple:active {
+  transform: scale(0.96);
+}
+</style>
+</head>
+<body>
+
+<!-- CONGRATS MODAL -->
+<div class="modal-overlay" id="congratsModal" onclick="closeCongrats()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h3>Congratulations!</h3>
+      <button class="modal-close" onclick="closeCongrats()">×</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:40px 20px">
+      <div style="font-size:64px;margin-bottom:20px">🎉</div>
+      <h2 style="margin-bottom:10px">All Correct!</h2>
+      <p style="color:var(--text-muted);margin-bottom:20px">You've successfully solved the circuit problem.</p>
+      <button class="btn-apple" onclick="closeCongrats()">Awesome!</button>
+    </div>
+  </div>
+</div>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)'], ['$', '$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+<script src="config.js"></script>
+<script src="dom-utils.js"></script>
+<script src="state.js"></script>
+<script src="canvas.js"></script>
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-text">
+      <h1>Adaptive Homework Tutor</h1>
+      <p>Step-by-Step Guidance</p>
+    </div>
+  </div>
+
+  <button class="todo-trigger" onclick="toggleDrawer()" title="To-Do List">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="3"/>
+      <line x1="3" y1="9" x2="21" y2="9"/>
+      <line x1="9" y1="4" x2="9" y2="9"/>
+      <line x1="15" y1="4" x2="15" y2="9"/>
+      <polyline points="7.5,14.5 9.5,16.5 13,13"/>
+    </svg>
+    <span class="badge" id="badgeCount" style="display:none"></span>
+  </button>
+
+  
+</header>
+
+<div class="app-body">
+  <section class="left">
+    <div class="prob-head">
+      <h2>Series-Parallel Resistor Circuit</h2>
+      <div class="prob-nav" id="probNav"></div>
+      <p>Find the total current, voltage drops, branch currents, and power for each resistor.</p>
+    </div>
+
+    <div class="circuit-section">
+      <div class="circuit-card">
+        <img src="graph.jpg" alt="电路图" style="display:block;max-width:100%;height:auto">
+      </div>
+    </div>
+
+    <div class="answers-scroll">
+      <div class="instruction" id="instruction"><span>Work through the problem below. Submit to check — or tap <strong>Guide Me</strong> for step-by-step help.</span><button class="instruction-close" onclick="dismissInstruction()" aria-label="Dismiss">×</button></div>
+      <div class="field-wrap"><div class="field-lbl">Total Resistance (Ω)</div><input class="field-in" id="f0" type="text" placeholder="R_total" data-ans="58.75"></div>
+      <div class="field-wrap"><div class="field-lbl">Total Current (A)</div><input class="field-in" id="f1" type="text" placeholder="I_total" data-ans="0.1702"></div>
+      <div class="field-wrap"><div class="field-lbl">Voltage across R1 (V)</div><input class="field-in" id="f2" type="text" placeholder="V_R1" data-ans="3.404"></div>
+      <div class="field-wrap"><div class="field-lbl">Voltage across R2‖R3 (V)</div><input class="field-in" id="f3" type="text" placeholder="V_R2 = V_R3" data-ans="3.191"></div>
+      <div class="field-wrap"><div class="field-lbl">Voltage across R4 (V)</div><input class="field-in" id="f4" type="text" placeholder="V_R4" data-ans="3.404"></div>
+      <div class="field-wrap"><div class="field-lbl">Current through R2 (A)</div><input class="field-in" id="f5" type="text" placeholder="I_R2" data-ans="0.1064"></div>
+      <div class="field-wrap"><div class="field-lbl">Current through R3 (A)</div><input class="field-in" id="f6" type="text" placeholder="I_R3" data-ans="0.0638"></div>
+      <div class="field-wrap"><div class="field-lbl">Total Power (W)</div><input class="field-in" id="f7" type="text" placeholder="P_total" data-ans="1.702"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="submitAll()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Submit Answers
+      </button>
+      <button class="btn btn-ghost" onclick="clearAll()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        Clear
+      </button>
+      <div class="btn-row-right">
+        <span class="progress-label">Progress</span>
+        <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+        <button class="btn-ico" id="btnPrevField" onclick="prevField()" title="Previous">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="btn-ico" id="btnNextField" onclick="nextField()" title="Next">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" id="dividerLG"></div>
+
+  <section class="center-guide">
+    <div class="inline-guide-panel" id="inlineGuidePanel">
+      <div class="guide-container">
+        <div class="guide-header">
+          <div class="inline-guide-head">
+            <div class="inline-guide-meta">
+              <div class="inline-guide-title">Guide Me</div>
+              <span id="guideModeBadgeInline" class="guide-badge">Pick a Box</span>
+            </div>
+            <button class="btn btn-ghost" onclick="closeInlineGuide()">Hide</button>
+          </div>
+        </div>
+        <div class="guide-content" id="guideStepsInline"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" id="dividerGR"></div>
+
+  <section class="right">
+    <div class="draw-tb">
+      <button class="tb-btn on" id="t-pen" onclick="setTool('pen')" title="Pen">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+      </button>
+      <button class="tb-btn" id="t-hand" onclick="setTool('hand')" title="Pan">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v1"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+      </button>
+      <button class="tb-btn" id="t-eraser" onclick="setTool('eraser')" title="Eraser">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16l11-11 7 7-1 8z"/><path d="M6 15l3 3"/></svg>
+      </button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="t-line" onclick="setTool('line')" title="Line">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="19" x2="19" y2="5"/></svg>
+      </button>
+      <button class="tb-btn" id="t-circle" onclick="setTool('circle')" title="Circle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/></svg>
+      </button>
+      <button class="tb-btn" id="t-rect" onclick="setTool('rect')" title="Rectangle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+      </button>
+      <button class="tb-btn" id="t-text" onclick="setTool('text')" title="Text label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+      </button>
+      <button class="tb-btn" id="t-draft" onclick="toggleDraftPad()" title="Draft Pad">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="13" y2="13"/></svg>
+      </button>
+      <button class="tb-btn" id="t-select" onclick="setTool('select')" title="Select area to Ask AI">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-7 1-4 7z"/></svg>
+      </button>
+      <div class="tb-sep"></div>
+      <div class="tb-color on"  style="background:#1e1b16" onclick="setColor('#1e1b16',this)" title="Black"></div>
+      <div class="tb-color"     style="background:#3d6ce8" onclick="setColor('#3d6ce8',this)" title="Blue"></div>
+      <div class="tb-color"     style="background:#e07225" onclick="setColor('#e07225',this)" title="Orange"></div>
+      <div class="tb-color"     style="background:#18916a" onclick="setColor('#18916a',this)" title="Green"></div>
+      <div class="tb-color"     style="background:#d44c3a" onclick="setColor('#d44c3a',this)" title="Red"></div>
+      <div class="tb-color"     style="background:#7c3dc5" onclick="setColor('#7c3dc5',this)" title="Purple"></div>
+      <div class="tb-sep"></div>
+      <div style="display:flex;align-items:center;gap:4px;margin-right:4px">
+        <button class="tb-btn" onclick="zoomCanvas(-0.1)" title="Zoom Out" style="width:26px;height:26px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <span id="zoomLevel" style="font-size:10px;font-weight:700;font-family:var(--mono);color:var(--text-muted);width:32px;text-align:center">100%</span>
+        <button class="tb-btn" onclick="zoomCanvas(0.1)" title="Zoom In" style="width:26px;height:26px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+      <div class="tb-sep"></div>
+      <div class="tb-right">
+        <button class="tb-btn" onclick="undoC()" title="Undo">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+        </button>
+        <button class="tb-btn" onclick="redoC()" title="Redo">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+        </button>
+        <button class="tb-btn" onclick="clearC()" title="Clear canvas">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+        <div class="tb-sep"></div>
+        <label class="tb-btn" title="Upload image" style="cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <input type="file" accept="image/*" id="imgUpload" style="display:none" onchange="uploadImg(this)">
+        </label>
+      </div>
+    </div>
+
+    <div class="canvas-wrap" id="cWrap">
+      <canvas id="mainCanvas"></canvas>
+      <svg id="svgLayer" class="svg-layer" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="askBox">
+        <div class="ask-input-wrap" onmousedown="event.stopPropagation()">
+          <input type="text" class="ask-input" placeholder="Ask about this area..." onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();sendAskAI()}else if(event.key==='Escape'){event.preventDefault();event.stopPropagation();hideAskBox()}else if(event.key==='Backspace'||event.key==='Delete'){event.stopPropagation()}">
+          <div class="ask-send-btn" onclick="sendAskAI()" title="Send to Chat">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="canvas-hint" id="cHint">
+        <svg class="hint-icon" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        <p>Start Drawing</p>
+        <small>Pick a tool and sketch your work</small>
+      </div>
+      <div id="draftPad" class="draft-pad" style="position:absolute;right:12px;bottom:12px;width:260px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;box-shadow:var(--sh-md);display:none">
+        <div style="height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;border-bottom:1.5px solid var(--border)">
+          <div style="font-size:12px;font-weight:700;color:var(--text)">Draft Pad</div>
+          <button class="btn btn-ghost" style="font-size:12px" onclick="toggleDraftPad()">Close</button>
+        </div>
+        <textarea id="draftText" style="width:100%;height:120px;border:none;outline:none;background:transparent;color:var(--text);font-size:12px;padding:10px;resize:none"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:8px;padding:8px 10px">
+          <button class="btn btn-secondary" onclick="copyDraft()">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="chat-fab" onclick="toggleChat()" title="Ask AI Tutor">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        <line x1="9" y1="10" x2="15" y2="10"/>
+        <line x1="12" y1="7" x2="12" y2="13"/>
+      </svg>
+      <span>Chat</span>
+    </button>
+  </section>
+</div>
+
+<!-- TODO DRAWER -->
+<div class="drawer-veil" id="veil" onclick="toggleDrawer()"></div>
+<aside class="todo-drawer" id="todoDrawer">
+  <div class="drawer-head">
+    <h3>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      To-Do List
+    </h3>
+    <button class="drawer-close" onclick="toggleDrawer()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="todo-scroll" id="todoScroll">
+    <div class="todo-group" id="grpEE215">
+      <div class="todo-group-lbl">EE215</div>
+      <div class="todo-item" onclick="toggleItem(this)">
+        <div class="todo-cb"></div>
+        <div>
+          <div class="todo-item-text">HW6<span class="tag tag-hw">EE215</span></div>
+          <div class="todo-item-meta">Submit solutions and check units</div>
+        </div>
+      </div>
+      <div class="todo-item" onclick="toggleItem(this)">
+        <div class="todo-cb"></div>
+        <div>
+          <div class="todo-item-text">Prepare for Midterm<span class="tag tag-due">EE215</span></div>
+          <div class="todo-item-meta">Focus: impedance, op-amp, RC/RL transients</div>
+        </div>
+      </div>
+      <div class="todo-item" id="todoProgress" onclick="goToNextIncompleteField()">
+        <div class="todo-cb"></div>
+        <div>
+          <div class="todo-item-text">Homework progress<span class="tag tag-hw">Tutor</span></div>
+          <div class="todo-item-meta" id="todoProgressMeta">0/8 completed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-add">
+    <input id="newTask" type="text" placeholder="Add a task…" onkeypress="if(event.key==='Enter')addTask()">
+    <button class="drawer-add-btn" onclick="addTask()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+</aside>
+
+ 
+
+<!-- UNIFIED TUTOR PANEL -->
+<div class="tutor-panel" id="tutorPanel">
+  <div class="chat-resize-handle" id="chatResizeHandle" title="Drag to resize"></div>
+  <div class="tutor-head">
+    <div class="tutor-tabs">
+      <div class="tutor-tab active" id="tab-chat" style="cursor:default">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="12" y1="7" x2="12" y2="13"/></svg>
+        Chat
+      </div>
+    </div>
+    <div class="tutor-actions">
+      <button class="tutor-icon-btn" onclick="openSettingsModal()" title="Customize Tutor">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="tutor-icon-btn" onclick="closeTutorPanel()" title="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  
+  <div class="tutor-content">
+    <!-- CHAT VIEW -->
+    <div class="tutor-view active" id="view-chat">
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="msg bot">
+          <div class="msg-av"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="msg-bub">Hi! I'm here to guide you through this circuit problem. What are you stuck on? 💡</div>
+        </div>
+      </div>
+      <div class="quick-chips" id="chips">
+        <span class="chip" onclick="quickSend('How do I find R_total?')">How to find R_total?</span>
+        <span class="chip" onclick="quickSend('What is the parallel formula?')">Parallel formula?</span>
+        <span class="chip" onclick="quickSend('Give me a hint')">Hint</span>
+      </div>
+      <div class="chat-foot">
+        <!-- Voice -->
+        <button class="chat-icon-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice input">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <!-- Attach file -->
+        <label class="chat-icon-btn" title="Attach file" style="cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          <input type="file" id="chatFileInput" style="display:none" onchange="handleChatFile(this)">
+        </label>
+        <textarea class="chat-in" id="chatIn" rows="1" placeholder="Ask a question…"
+          onkeypress="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
+          oninput="autoH(this)"></textarea>
+        <button class="chat-send" onclick="sendMsg()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADVANCED SETTINGS MODAL -->
+<div class="settings-modal-overlay" id="settingsModalOverlay">
+  <div class="settings-modal">
+    <div class="settings-header">
+      <h2>Customize Your Tutor</h2>
+      <button onclick="closeSettingsModal()" style="color:var(--text-muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="settings-body">
+      <div class="settings-sidebar">
+        <div class="settings-nav-item active" onclick="switchSettingsTab('response', this)">Response Style</div>
+        <div class="settings-nav-item" onclick="switchSettingsTab('interaction', this)">Interaction</div>
+        <div class="settings-nav-item" onclick="switchSettingsTab('teaching', this)">Teaching</div>
+        <div class="settings-nav-item" onclick="switchSettingsTab('access', this)">Accessibility</div>
+      </div>
+      
+      <div class="settings-content">
+        <!-- Response Style -->
+        <div class="setting-section active" id="set-response">
+          <div class="setting-group">
+            <label>Response Length</label>
+            <div class="range-wrap">
+              <span style="font-size:11px;font-weight:600;color:var(--text-2)">Concise</span>
+              <input type="range" min="1" max="3" value="2" oninput="updatePreview('len', this.value)">
+              <span style="font-size:11px;font-weight:600;color:var(--text-2)">Detailed</span>
+            </div>
+            <div class="range-labels">
+              <span>Short & direct</span>
+              <span>Balanced</span>
+              <span>In-depth explanations</span>
+            </div>
+          </div>
+          
+          <div class="setting-group">
+            <label>Tone</label>
+            <select style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-family:var(--font);font-size:13px" onchange="updatePreview('tone', this.value)">
+              <option value="Encouraging">Encouraging (Supportive & warm)</option>
+              <option value="Neutral">Neutral (Professional & direct)</option>
+              <option value="Socratic">Socratic (Question-heavy)</option>
+            </select>
+          </div>
+          
+          <div class="setting-group">
+            <label>Technical Depth</label>
+            <div class="range-wrap">
+              <span style="font-size:11px;font-weight:600;color:var(--text-2)">Surface</span>
+              <input type="range" min="1" max="3" value="2">
+              <span style="font-size:11px;font-weight:600;color:var(--text-2)">Deep Dive</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Interaction -->
+        <div class="setting-section" id="set-interaction">
+           <div class="setting-group">
+            <label>How Often Should I Check In?</label>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+              <label style="display:flex;gap:8px;font-weight:500;font-size:13px;align-items:center;cursor:pointer">
+                <input type="radio" name="checkin" value="reactive" checked onchange="updatePreview('checkin', 'reactive')"> Only when I ask (Reactive)
+              </label>
+              <label style="display:flex;gap:8px;font-weight:500;font-size:13px;align-items:center;cursor:pointer">
+                <input type="radio" name="checkin" value="balanced" onchange="updatePreview('checkin', 'balanced')"> Occasional check-ins (Balanced)
+              </label>
+              <label style="display:flex;gap:8px;font-weight:500;font-size:13px;align-items:center;cursor:pointer">
+                <input type="radio" name="checkin" value="proactive" onchange="updatePreview('checkin', 'proactive')"> Frequent guidance (Proactive)
+              </label>
+            </div>
+          </div>
+          <div class="setting-group">
+             <label>When Should I Offer Hints?</label>
+             <select style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-family:var(--font);font-size:13px">
+               <option>After 10 minutes stuck</option>
+               <option>After 5 minutes stuck</option>
+               <option>Only on request</option>
+             </select>
+          </div>
+        </div>
+
+        <!-- Teaching -->
+        <div class="setting-section" id="set-teaching">
+           <div class="setting-group">
+            <label>Teaching Preferences</label>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+              <label style="display:flex;gap:8px;font-weight:500;font-size:13px;align-items:center;cursor:pointer">
+                <input type="checkbox" checked onchange="updatePreview('teach', 'examples')"> Prefer worked examples
+              </label>
+              <label style="display:flex;gap:8px;font-weight:500;font-size:13px;align-items:center;cursor:pointer">
+                <input type="checkbox" checked onchange="updatePreview('teach', 'concepts')"> Prefer conceptual explanations
+              </label>
+              <label style="display:flex;gap:8px;font-weight:500;font-size:13px;align-items:center;cursor:pointer">
+                <input type="checkbox" checked onchange="updatePreview('teach', 'steps')"> Use step-by-step breakdowns
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Accessibility -->
+        <div class="setting-section" id="set-access">
+           <div class="setting-group">
+            <label>Visual Aids</label>
+             <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+              <label style="display:flex;gap:8px;font-weight:500;font-size:13px;align-items:center;cursor:pointer">
+                <input type="checkbox" checked onchange="updatePreview('access', 'contrast')"> High contrast text
+              </label>
+              <label style="display:flex;gap:8px;font-weight:500;font-size:13px;align-items:center;cursor:pointer">
+                <input type="checkbox" onchange="updatePreview('access', 'dyslexia')"> Dyslexia-friendly font
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      
+      <div class="settings-preview-pane">
+        <div class="preview-label">Live Preview</div>
+        <div class="preview-card">
+          <div class="preview-label" style="color:var(--blue)">Student</div>
+          <p class="preview-text" style="margin-bottom:12px;font-weight:500">I'm stuck on this circuit problem...</p>
+          
+          <div class="preview-label" style="color:var(--text-muted)">Tutor</div>
+          <p class="preview-text" id="previewResponse">That's a great question! Let's work through this together. First, let's identify the parallel resistors.</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="resetSettings()">Reset to Defaults</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+function typesetMath(root){
+  if(window.MathJax && MathJax.typesetPromise){
+    MathJax.typesetPromise(root ? [root] : undefined).catch(function(){});
+  }
+}
+
+// ── PANEL RESIZE (TRI-PANE) ──────────────────────────
+(function(){
+  const body = document.querySelector('.app-body');
+  const leftEl = document.querySelector('.left');
+  const centerEl = document.querySelector('.center-guide');
+  const rightEl = document.querySelector('.right');
+  const divLG = document.getElementById('dividerLG');
+  const divGR = document.getElementById('dividerGR');
+  function isOpen(){ return document.body.classList.contains('guide-inline-open'); }
+  const DIV_W = 6*2; // two dividers total width when open
+  const MIN = 260;
+  function totalW(){return body.getBoundingClientRect().width}
+  function clamp(l,c){
+    const tot = totalW();
+    const minC = isOpen() ? MIN : 0;
+    const divW = isOpen() ? DIV_W : 6; // single divider when closed
+    const maxL = tot - MIN - minC - divW;
+    l = Math.max(MIN, Math.min(l, maxL));
+    const maxC = tot - l - MIN - divW;
+    c = Math.max(minC, Math.min(c, maxC));
+    const r = tot - l - c - divW;
+    return {l,c,r};
+  }
+  function apply(l,c){
+    const w = clamp(l,c);
+    leftEl.style.width = w.l + 'px';
+    centerEl.style.width = (isOpen()? w.c : 0) + 'px';
+    rightEl.style.width = w.r + 'px';
+    requestAnimationFrame(fitCanvas);
+  }
+  window.__triPaneApply = apply;
+  // Initialize if not set
+  const tot0 = totalW();
+  const l0 = Math.min(Math.max(leftEl.getBoundingClientRect().width||560, MIN), tot0 - MIN - MIN - 6);
+  const c0 = isOpen()? Math.min(Math.max(centerEl.getBoundingClientRect().width||440, MIN), tot0 - l0 - MIN - DIV_W) : 0;
+  apply(l0,c0);
+  // Drag left<->center
+  let drag=false,startX=0,startL=0,startC=0;
+  function startDrag(e,which){
+    drag=which; startX=(e.touches?e.touches[0].clientX:e.clientX);
+    startL=leftEl.getBoundingClientRect().width;
+    startC=centerEl.getBoundingClientRect().width;
+    (which===1?divLG:divGR).classList.add('dragging');
+    document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    e.preventDefault&&e.preventDefault();
+  }
+  function onMove(e){
+    if(!drag) return;
+    const x=(e.touches?e.touches[0].clientX:e.clientX);
+    const dx=x-startX;
+    if(drag===1){
+      apply(startL+dx, startC-dx);
+    } else if(drag===2){
+      apply(startL, startC+dx);
+    }
+  }
+  function endDrag(){
+    if(!drag) return;
+    (drag===1?divLG:divGR).classList.remove('dragging');
+    drag=false; document.body.style.cursor=''; document.body.style.userSelect='';
+    fitCanvas();
+  }
+  if(divLG){
+    divLG.addEventListener('mousedown',e=>startDrag(e,1));
+    divLG.addEventListener('touchstart',e=>startDrag(e,1),{passive:false});
+  }
+  if(divGR){
+    divGR.addEventListener('mousedown',e=>startDrag(e,2));
+    divGR.addEventListener('touchstart',e=>startDrag(e,2),{passive:false});
+  }
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('touchmove',onMove,{passive:false});
+  document.addEventListener('mouseup',endDrag);
+  document.addEventListener('touchend',endDrag);
+})();
+
+// ── CANVAS ───────────────────────────────────────────
+const canvas=document.getElementById('mainCanvas'),ctx=canvas.getContext('2d'),cWrap=document.getElementById('cWrap'),cHint=document.getElementById('cHint');
+let tool='pen',color='#1e1b16',size=2,drawing=false,ox=0,oy=0,sx=0,sy=0,hist=[],redo=[];
+
+// Canvas core
+let snap=null;
+const MIN_SEL = 6;
+const LABEL_AREA = 'Area Inquiry';
+const LABEL_SKETCH = 'My sketch';
+function redraw(){if(snap)ctx.putImageData(snap,0,0)}
+
+// SVG vector path tracking for free handwriting
+let currentPath = null;
+let pathPoints = [];
+let smoothingFactor = 0.3;
+
+// Select tool state
+let selX=0,selY=0,selW=0,selH=0,draggingSel=false;
+// Ask tool state
+let askActive=false;
+// Helper to safely get askBox
+function getAskBox() { return document.getElementById('askBox'); }
+
+// Zoom state
+let zoom = 1.0;
+
+function fitCanvas(){
+  const r=cWrap.getBoundingClientRect();
+  const snap=(canvas.width>0&&canvas.height>0)?ctx.getImageData(0,0,canvas.width,canvas.height):null;
+  // Apply zoom to canvas dimensions
+  const newW = Math.floor(r.width * zoom);
+  const newH = Math.floor(r.height * zoom);
+  
+  // Only resize if actually changed to prevent flicker
+  if (canvas.width !== newW || canvas.height !== newH) {
+    canvas.width = newW;
+    canvas.height = newH;
+    
+    // Scale context for drawing operations
+    ctx.scale(zoom, zoom);
+    
+    if(snap) ctx.putImageData(snap,0,0); // Naive restore, better to redraw from history if possible
+  }
+  
+  // Center the canvas if zoomed out
+  if (zoom < 1) {
+    canvas.style.left = (r.width - newW) / 2 + 'px';
+    canvas.style.top = (r.height - newH) / 2 + 'px';
+  } else {
+    canvas.style.left = '0';
+    canvas.style.top = '0';
+  }
+  
+  // Scale the background grid to match zoom
+  const baseGrid = 24;
+  cWrap.style.backgroundSize = (baseGrid*zoom)+'px '+(baseGrid*zoom)+'px';
+  
+  // Update zoom label
+  document.getElementById('zoomLevel').textContent = Math.round(zoom * 100) + '%';
+  
+  // Update SVG layer size
+  const svg=document.getElementById('svgLayer');
+  if(svg){
+    svg.setAttribute('width', r.width);
+    svg.setAttribute('height', r.height);
+    svg.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
+  }
+}
+
+function zoomCanvas(delta) {
+  const newZoom = Math.max(0.5, Math.min(3.0, zoom + delta));
+  if (newZoom !== zoom) {
+    // Save current content before resizing
+    saveSnap();
+    zoom = newZoom;
+    
+    // Trigger resize which handles scaling
+    // We need to restore the image data scaled, which is tricky with raw ImageData.
+    // Better approach: Draw existing canvas to temp, resize, draw back scaled.
+    
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    tempCanvas.getContext('2d').drawImage(canvas, 0, 0);
+    
+    fitCanvas();
+    
+    // Restore content scaled
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform for direct pixel manipulation
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+}
+
+fitCanvas();
+const _debounce=function(fn,delay=120){let t;return function(){const a=arguments;clearTimeout(t);t=setTimeout(function(){fn.apply(null,a)},delay)}};
+const _fitCanvasDebounced=_debounce(fitCanvas,120);
+window.addEventListener('resize',_fitCanvasDebounced);
+
+// Allow clicking percentage to cycle zoom presets
+const ZOOM_STOPS=[0.75,1.0,1.25,1.5,2.0];
+function setZoom(val){
+  const newZoom=Math.max(0.5,Math.min(3.0,val));
+  if(newZoom===zoom) return;
+  saveSnap();
+  zoom=newZoom;
+  const tempCanvas=document.createElement('canvas');
+  tempCanvas.width=canvas.width;
+  tempCanvas.height=canvas.height;
+  tempCanvas.getContext('2d').drawImage(canvas,0,0);
+  fitCanvas();
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(tempCanvas,0,0,tempCanvas.width,tempCanvas.height,0,0,canvas.width,canvas.height);
+  ctx.restore();
+}
+const zoomLevelEl=document.getElementById('zoomLevel');
+if(zoomLevelEl){
+  zoomLevelEl.addEventListener('click',()=>{
+    const idx=ZOOM_STOPS.findIndex(z=>Math.abs(z-zoom)<1e-6);
+    const next=ZOOM_STOPS[(idx+1+ZOOM_STOPS.length)%ZOOM_STOPS.length];
+    setZoom(next);
+  });
+}
+
+function saveSnap(){hist.push(canvas.toDataURL());if(hist.length>60)hist.shift();redo=[]}
+function pos(e){const r=canvas.getBoundingClientRect(),s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top}}
+
+if (window.CanvasModule) {
+  CanvasModule.init({ canvas, svgLayer: document.getElementById('svgLayer'), cWrap, cHint });
+}
+
+canvas.addEventListener('mousedown',e=>CanvasModule.onDown(e));canvas.addEventListener('mousemove',e=>CanvasModule.onMove(e));canvas.addEventListener('mouseup',e=>CanvasModule.onUp(e));canvas.addEventListener('mouseleave',e=>CanvasModule.onUp(e));
+canvas.addEventListener('touchstart',e=>{e.preventDefault();CanvasModule.onDown(e)},{passive:false});canvas.addEventListener('touchmove',e=>{e.preventDefault();CanvasModule.onMove(e)},{passive:false});canvas.addEventListener('touchend',e=>CanvasModule.onUp(e));
+
+// Delete key removes selection
+document.addEventListener('keydown',e=>{
+  const tgt = e.target;
+  const isEditing = tgt && (tgt.tagName==='INPUT' || tgt.tagName==='TEXTAREA' || (tgt.closest && tgt.closest('#askBox')));
+  if(isEditing) return;
+  if(tool==='select'&&askActive&&(e.key==='Delete'||e.key==='Backspace')){
+    e.preventDefault();hideAskBox();
+  }
+});
+
+function onDown(e){
+  const p=pos(e);
+  if(tool==='hand')return;
+  if(tool==='select'){
+    // Explicitly start dragging immediately
+    selX=p.x; selY=p.y; selW=0; selH=0;
+    draggingSel=true;
+    snap = ctx.getImageData(0,0,canvas.width,canvas.height);
+    return;
+  }
+  
+  if(tool==='text'){
+    createTextInput(p.x, p.y);
+    return;
+  }
+  drawing=true;ox=sx=p.x;oy=sy=p.y;saveSnap();
+  if(tool==='pen'||tool==='eraser'){
+    ctx.beginPath();ctx.moveTo(ox,oy);
+    
+    // Start SVG path for vector drawing
+    if(tool==='pen'){
+      const svg=document.getElementById('svgLayer');
+      if(svg){
+        currentPath=document.createElementNS('http://www.w3.org/2000/svg','path');
+        currentPath.setAttribute('fill','none');
+        currentPath.setAttribute('stroke',color);
+        currentPath.setAttribute('stroke-width',size);
+        currentPath.setAttribute('stroke-linecap','round');
+        currentPath.setAttribute('stroke-linejoin','round');
+        pathPoints=[{x:p.x,y:p.y}];
+        currentPath.setAttribute('d',`M${p.x},${p.y}`);
+        svg.appendChild(currentPath);
+      }
+    }
+  }
+}
+
+function createTextInput(x, y) {
+  // If there is already an active input, finalize it first
+  if (document.getElementById('tempTextInput')) {
+    finalizeText();
+  }
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.id = 'tempTextInput';
+  input.className = 'canvas-text-input';
+  
+  // Adjust position to align with where text will be drawn
+  // Canvas fillText draws from baseline, but input is top-aligned box.
+  // We'll try to position it reasonably.
+  
+  const fontSize = size * 5 + 9;
+  input.style.fontSize = fontSize + 'px';
+  input.style.color = color;
+  input.style.left = (x) + 'px';
+  input.style.top = (y - fontSize) + 'px'; // Adjust for baseline roughly
+  
+  // Append to canvas wrapper
+  cWrap.appendChild(input);
+  
+  // Focus
+  setTimeout(() => input.focus(), 0);
+  
+  // Events
+  input.onkeydown = function(e) {
+    if (e.key === 'Enter') finalizeText();
+  };
+  input.onblur = finalizeText;
+}
+
+function finalizeText() {
+  const input = document.getElementById('tempTextInput');
+  if (!input) return;
+  
+  const txt = input.value.trim();
+  if (txt) {
+    saveSnap();
+    const fontSize = parseFloat(input.style.fontSize);
+    ctx.font = `${fontSize}px IBM Plex Mono`;
+    ctx.fillStyle = input.style.color;
+    // Also add as SVG text for vector export
+    const svg=document.getElementById('svgLayer');
+    if(svg){
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x', parseFloat(input.style.left));
+      t.setAttribute('y', parseFloat(input.style.top) + fontSize);
+      t.setAttribute('fill', input.style.color);
+      t.setAttribute('font-size', fontSize);
+      t.setAttribute('font-family', 'IBM Plex Mono');
+      t.textContent = txt;
+      svg.appendChild(t);
+    }
+    // Input top is y - fontSize, so baseline (y) is roughly top + fontSize
+    const x = parseFloat(input.style.left);
+    const y = parseFloat(input.style.top) + fontSize * 0.9; // Approximate baseline
+    
+    ctx.fillText(txt, x, y);
+    cHint.classList.add('gone');
+  }
+  
+  input.remove();
+}
+
+function onMove(e){
+  const p=pos(e);
+  if(tool==='select'){
+    if(draggingSel){
+      // Visual feedback for selection drag
+      const w=p.x-selX,h=p.y-selY;
+      selW=w;selH=h;
+      
+      // Clear and redraw canvas state
+      redraw(); 
+      
+      // Draw dashed selection rectangle
+      ctx.save();
+      ctx.setLineDash([5,5]);
+      ctx.lineWidth=2;
+      ctx.strokeStyle='#3d6ce8';
+      const nx = Math.min(selX, selX + selW);
+      const ny = Math.min(selY, selY + selH);
+      const nw = Math.abs(selW);
+      const nh = Math.abs(selH);
+      ctx.strokeRect(nx, ny, nw, nh);
+      ctx.fillStyle='rgba(61,108,232,0.1)';
+      ctx.fillRect(nx, ny, nw, nh);
+      ctx.restore();
+    } else if(drawing){
+      // This branch might be redundant if we use draggingSel
+    }
+    return;
+  }
+  if(!drawing)return;
+  cHint.classList.add('gone');
+  if(tool==='pen'){
+    ctx.globalCompositeOperation='source-over';ctx.strokeStyle=color;ctx.lineWidth=size;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.lineTo(p.x,p.y);ctx.stroke();ox=p.x;oy=p.y;
+    
+    // Add point to SVG path with advanced smoothing and pen pressure
+    if(currentPath){
+      pathPoints.push({x:p.x,y:p.y});
+      if(pathPoints.length>=2){
+        // Calculate speed for pressure simulation
+        const prev=pathPoints[pathPoints.length-2];
+        const curr=pathPoints[pathPoints.length-1];
+        const distance=Math.sqrt((curr.x-prev.x)**2+(curr.y-prev.y)**2);
+        const speed=distance*10; // Approximate speed
+        
+        // Apply smoothing
+        const smoothedPoints=smoothPathPoints(pathPoints,smoothingFactor);
+        
+        // Generate SVG path with quadratic Bezier curves
+        let d=`M${smoothedPoints[0].x},${smoothedPoints[0].y}`;
+        for(let i=1;i<smoothedPoints.length;i++){
+          const prevPt=smoothedPoints[i-1];
+          const currPt=smoothedPoints[i];
+          const cpX=prevPt.x+(currPt.x-prevPt.x)*0.5;
+          const cpY=prevPt.y+(currPt.y-prevPt.y)*0.5;
+          d+=`Q${cpX},${cpY},${currPt.x},${currPt.y}`;
+        }
+        
+        // Apply pen pressure to stroke width
+        const pressure=simulatePenPressure(distance,speed);
+        const dynamicWidth=size*pressure;
+        currentPath.setAttribute('stroke-width',dynamicWidth);
+        currentPath.setAttribute('d',d);
+      }
+    }
+  } else if(tool==='eraser'){
+    ctx.globalCompositeOperation='destination-out';ctx.lineWidth=size*6;ctx.lineCap='round';
+    ctx.lineTo(p.x,p.y);ctx.stroke();ctx.globalCompositeOperation='source-over';ox=p.x;oy=p.y;
+  } else restoreSnap(()=>drawShape(sx,sy,p.x,p.y));
+}
+
+function onUp(e){
+  drawing=false;
+  
+  // Clear SVG path tracking
+  if(tool==='pen'){
+    currentPath=null;
+    pathPoints=[];
+  }
+  
+  if(tool==='select' && draggingSel){
+    draggingSel=false;
+    // Normalize rect
+    if(selW<0){selX+=selW;selW=-selW}
+    if(selH<0){selY+=selH;selH=-selH}
+    
+    if(selW < MIN_SEL || selH < MIN_SEL) {
+      hideAskBox();
+      redraw();
+      return;
+    }
+
+    redraw();
+    if(!selectionHasContent(selX, selY, selW, selH)) {
+      hideAskBox();
+      return;
+    }
+
+    showAskBox(selX, selY, selW, selH);
+    return;
+  }
+  
+  if(tool!=='pen'&&tool!=='eraser')return;
+  saveState();
+}
+
+function saveState(){
+  // Simple undo/redo implementation
+  // We can't implement full undo stack here without more code, 
+  // but let's at least define the function to prevent the crash.
+  // In a real app, we'd push the current canvas state to an array.
+  // For now, we'll just save the last snapshot.
+  saveSnap();
+}
+
+function showAskBox(x,y,w,h){
+  const box = getAskBox();
+  if(!box) return;
+
+  const r=canvas.getBoundingClientRect(),wrapR=cWrap.getBoundingClientRect();
+  const offX=r.left-wrapR.left,offY=r.top-wrapR.top;
+  
+  box.style.display = 'block';
+  box.style.left = (offX+x) + 'px';
+  box.style.top = (offY+y) + 'px';
+  box.style.width = w + 'px';
+  box.style.height = h + 'px';
+  askActive = true;
+  
+  // Flip input if too close to bottom
+  const wrap = box.querySelector('.ask-input-wrap');
+  if(y + h + 60 > wrapR.height) {
+    wrap.style.bottom = 'auto';
+    wrap.style.top = '-50px';
+  } else {
+    wrap.style.bottom = '-50px';
+    wrap.style.top = 'auto';
+  }
+  
+  setTimeout(()=>wrap.querySelector('input').focus(), 10);
+}
+
+function hideAskBox(){
+  const box = getAskBox();
+  if(box) box.style.display='none';
+  askActive = false;
+}
+
+// Pen pressure simulation and smoothing functions
+function simulatePenPressure(distance, speed) {
+  // Simulate pen pressure based on drawing speed and distance
+  // Faster movement = lighter pressure, slower = heavier
+  const basePressure = 0.7;
+  const speedFactor = Math.max(0.3, Math.min(1.0, 1.0 - (speed / 2000)));
+  return basePressure * speedFactor;
+}
+
+function smoothPathPoints(points, smoothing = 0.3) {
+  if (points.length < 3) return points;
+  
+  const smoothed = [points[0]];
+  
+  for (let i = 1; i < points.length - 1; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const next = points[i + 1];
+    
+    const smoothedX = curr.x + (prev.x + next.x - 2 * curr.x) * smoothing;
+    const smoothedY = curr.y + (prev.y + next.y - 2 * curr.y) * smoothing;
+    
+    smoothed.push({ x: smoothedX, y: smoothedY });
+  }
+  
+  smoothed.push(points[points.length - 1]);
+  return smoothed;
+}
+
+function selectionHasContent(x, y, w, h) {
+  const ix = Math.max(0, Math.floor(x));
+  const iy = Math.max(0, Math.floor(y));
+  const iw = Math.max(0, Math.min(canvas.width - ix, Math.floor(w)));
+  const ih = Math.max(0, Math.min(canvas.height - iy, Math.floor(h)));
+  if(iw === 0 || ih === 0) return false;
+
+  const data = ctx.getImageData(ix, iy, iw, ih).data;
+  const pxCount = iw * ih;
+  const stepPx = pxCount > 350000 ? 16 : (pxCount > 100000 ? 8 : 1);
+  for(let i = 3; i < data.length; i += 4 * stepPx) {
+    if(data[i] !== 0) return true;
+  }
+  return false;
+}
+
+function sendAskAI(){
+  if(selW<=0||selH<=0)return;
+  const box = getAskBox();
+  if(!box) return;
+  
+  const tCan=document.createElement('canvas'),tCtx=tCan.getContext('2d');
+  // Crop from canvas
+  
+  redraw(); 
+  
+  const r = canvas.getBoundingClientRect();
+  const wrapR = cWrap.getBoundingClientRect();
+  
+  // Create crop
+  tCan.width = selW;
+  tCan.height = selH;
+  tCtx.drawImage(canvas, selX, selY, selW, selH, 0, 0, selW, selH);
+  
+  const dataURL=tCan.toDataURL('image/png');
+  
+  // Open Chat
+  openTutorPanel('chat');
+  
+  // Get text
+  const inp = box.querySelector('input');
+  const txt = inp.value.trim() || "What is this part?";
+  inp.value = '';
+  
+  addChatImageMessage('Area Inquiry', dataURL, txt);
+  
+  hideAskBox();
+  
+  botMsg("I see the area you highlighted. " + getReply(txt.toLowerCase()));
+}
+
+ 
+
+function restoreSnap(cb){if(!hist.length)return;const img=new Image();img.onload=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0);cb&&cb()};img.src=hist[hist.length-1]}
+function restoreSnapSilent(cb){if(!hist.length)return;const img=new Image();img.onload=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0);cb&&cb()};img.src=hist[hist.length-1]}
+function drawShape(x1,y1,x2,y2){
+  ctx.strokeStyle=color;ctx.lineWidth=size;ctx.lineCap='round';
+  // Vector layer
+  const svg=document.getElementById('svgLayer');
+  if(svg){
+    if(tool==='line'){
+      const el=document.createElementNS('http://www.w3.org/2000/svg','line');
+      el.setAttribute('x1', x1); el.setAttribute('y1', y1);
+      el.setAttribute('x2', x2); el.setAttribute('y2', y2);
+      el.setAttribute('stroke', color); el.setAttribute('stroke-width', size);
+      el.setAttribute('stroke-linecap','round');
+      svg.appendChild(el);
+      return;
+    }
+    if(tool==='circle'){
+      const rx=(x2-x1)/2,ry=(y2-y1)/2;
+      const el=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+      el.setAttribute('cx', x1+rx); el.setAttribute('cy', y1+ry);
+      el.setAttribute('rx', Math.abs(rx)); el.setAttribute('ry', Math.abs(ry));
+      el.setAttribute('fill', 'none'); el.setAttribute('stroke', color); el.setAttribute('stroke-width', size);
+      svg.appendChild(el);
+      return;
+    }
+    if(tool==='rect'){
+      const el=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      el.setAttribute('x', Math.min(x1,x2)); el.setAttribute('y', Math.min(y1,y2));
+      el.setAttribute('width', Math.abs(x2-x1)); el.setAttribute('height', Math.abs(y2-y1));
+      el.setAttribute('fill', 'none'); el.setAttribute('stroke', color); el.setAttribute('stroke-width', size);
+      svg.appendChild(el);
+      return;
+    }
+  }
+  // Fallback to canvas
+  ctx.beginPath();
+  if(tool==='line'){ctx.moveTo(x1,y1);ctx.lineTo(x2,y2)}
+  if(tool==='circle'){const rx=(x2-x1)/2,ry=(y2-y1)/2;ctx.ellipse(x1+rx,y1+ry,Math.abs(rx),Math.abs(ry),0,0,Math.PI*2)}
+  if(tool==='rect')ctx.rect(x1,y1,x2-x1,y2-y1);
+  ctx.stroke()
+}
+
+const SIZES = [2, 4, 7];
+const SIZE_NAMES = {2: 'Small', 4: 'Medium', 7: 'Large'};
+
+function setTool(t){
+  // Cycle size if clicking the same tool (for tools that support sizing)
+  if(tool === t && t === 'text') {
+    const idx = SIZES.indexOf(size);
+    const nextIdx = (idx + 1) % SIZES.length;
+    size = SIZES[nextIdx];
+    if (window.CanvasModule) { CanvasModule.setSize(size); }
+    toast(`${t.charAt(0).toUpperCase() + t.slice(1)} Size: ${SIZE_NAMES[size]}`);
+    return;
+  }
+
+  tool=t;
+  if (window.CanvasModule) { CanvasModule.setTool(t); }
+  document.querySelectorAll('[id^="t-"]').forEach(b=>b.classList.remove('on'));
+  const el=document.getElementById('t-'+t);if(el)el.classList.add('on');
+  
+  const cur={hand:'grab',eraser:'cell',text:'text',select:'default'};
+  canvas.style.cursor=cur[t]||'crosshair';
+  if(t!=='select'){hideAskBox()}
+  
+  if(t==='select'){
+    // Reset ask state
+    askActive = false;
+    hideAskBox();
+    toast('⛝  Drag to select an area to ask about');
+  }
+}
+function setColor(c,el){color=c;if (window.CanvasModule) { CanvasModule.setColor(c); }document.querySelectorAll('.tb-color').forEach(x=>x.classList.remove('on'));el.classList.add('on')}
+// function setSize removed
+function undoC(){if(hist.length<2){ctx.clearRect(0,0,canvas.width,canvas.height);return}redo.push(hist.pop());restoreSnap();hideAskBox()}
+function redoC(){if(!redo.length)return;const s=redo.pop();hist.push(s);const img=new Image();img.onload=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0)};img.src=s}
+function clearC(){saveSnap();ctx.clearRect(0,0,canvas.width,canvas.height);clearVector();cHint.classList.remove('gone');hideAskBox()}
+// Also clear vector layer
+function clearVector(){const svg=document.getElementById('svgLayer');if(svg)svg.innerHTML=''}
+
+// ── UPLOAD IMAGE ──────────────────────────────────────
+function uploadImg(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      saveSnap();
+      // Fit image proportionally, max 60% of canvas
+      const maxW=canvas.width*0.6,maxH=canvas.height*0.6;
+      let w=img.width,h=img.height;
+      if(w>maxW){h=h*(maxW/w);w=maxW}if(h>maxH){w=w*(maxH/h);h=maxH}
+      ctx.drawImage(img,(canvas.width-w)/2,(canvas.height-h)/2,w,h);
+      cHint.classList.add('gone');
+      toast('📷  Image added to canvas');
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+// ── ASK AI ABOUT SKETCH ───────────────────────────────
+function sendSketchToAI(){
+  const dataURL=canvas.toDataURL('image/png');
+  openTutorPanel('chat');
+  addChatImageMessage('My sketch', dataURL, '');
+  document.getElementById('chips').style.display='none';
+  botMsg("I can see your sketch! Here's what I notice:\n\nLooks like you're working through the circuit layout. Make sure you've identified:\n\n① Which resistors are in series?\n② Which are in parallel?\n\nDoes your diagram match the problem setup?");
+}
+
+function copyHintRow(btn){
+  const row=btn.closest('.guide-hint-row');
+  if(!row) return;
+  const txt=row.querySelector('.hint-text');
+  if(!txt) return;
+  navigator.clipboard.writeText(txt.textContent).then(()=>toast('📋  Copied'));
+}
+function toggleDraftPad(){const pad=document.getElementById('draftPad');if(pad)pad.style.display=pad.style.display==='none'?'block':'none'}
+function copyDraft(){const t=document.getElementById('draftText');if(!t)return;navigator.clipboard.writeText(t.value).then(()=>toast('📋  Draft copied'))}
+function goToNextIncompleteField(){
+  const fields=[...document.querySelectorAll('.answers-scroll .field-wrap .field-in')];
+  const idx=fields.findIndex(f=>!f.classList.contains('ok'));
+  if(idx>=0){currentFieldIndex=idx;renderProb(currentProb);document.getElementById(fields[idx].id).focus()}
+}
+ 
+
+// ── ANSWERS ───────────────────────────────────────────
+// Removed real-time checkF
+function checkF(el,ans){
+  // No-op for real-time checking
+}
+
+function refreshProg(){const all=document.querySelectorAll('.field-in'),n=[...all].filter(f=>f.classList.contains('ok')).length;document.getElementById('progFill').style.width=(n/8*100)+'%';}
+// Update drawer progress item
+updateProgressTodo();
+function updateProgressTodo(){
+  const all=[...document.querySelectorAll('.field-in')];
+  const n=all.filter(f=>f.classList.contains('ok')).length;
+  const meta=document.getElementById('todoProgressMeta');
+  const item=document.getElementById('todoProgress');
+  if(meta) meta.textContent=`${n}/8 completed`;
+  if(item){ if(n===8) item.classList.add('done'); else item.classList.remove('done'); }
+}
+
+function submitAll(){
+  const wraps=[...document.querySelectorAll('.answers-scroll .field-wrap')];
+  const cur=wraps[currentFieldIndex];
+  if(!cur) return;
+  const inp=cur.querySelector('.field-in');
+  if(!inp) return;
+
+  const valStr = inp.value.trim();
+  const val = parseFloat(valStr);
+  const ans = parseFloat(inp.dataset.ans);
+
+  let ok=false;
+  if(valStr===''){
+    inp.classList.remove('ok','err');
+  } else if(isNaN(val)) {
+    inp.classList.remove('ok');
+    inp.classList.add('err');
+  } else {
+    ok = Math.abs(val - ans) <= Math.max(Math.abs(ans)*0.05, 0.005);
+    inp.classList.toggle('ok', ok);
+    inp.classList.toggle('err', !ok);
+  }
+  
+  // Save status to persist across re-renders
+  const p=PROBLEMS[currentProb];
+  const f=p && p.fields && p.fields[currentFieldIndex];
+  if(f) {
+    f.value = valStr;
+    if(valStr==='') f.status = '';
+    else if(isNaN(val)) f.status = 'err';
+    else f.status = ok ? 'ok' : 'err';
+  }
+
+  let fb=cur.querySelector('.field-feedback');
+  if(!fb){
+    fb=document.createElement('div');
+    fb.className='field-feedback';
+    cur.appendChild(fb);
+  }
+  if(valStr===''){
+    fb.textContent='Empty — please enter a value';
+    fb.className='field-feedback err';
+    fb.style.display='';
+  } else if(ok){
+    fb.textContent='Correct';
+    fb.className='field-feedback ok';
+    fb.style.display='';
+  } else {
+    fb.textContent='Incorrect — try again';
+    fb.className='field-feedback err';
+    fb.style.display='';
+  }
+
+  let actions=cur.querySelector('.field-actions');
+  if(!actions){
+    actions=document.createElement('div');
+    actions.className='field-actions';
+    cur.appendChild(actions);
+  }
+  
+  // Track wrong count
+  if(!ok && valStr!==''){
+     f.wrongCount = (f.wrongCount || 0) + 1;
+  }
+  
+  const totalFields = (p && p.fields) ? p.fields.length : 0;
+  const isLastField = totalFields > 0 ? (currentFieldIndex === totalFields - 1) : false;
+  
+  let btns = '';
+  // Guide Me: show if wrong >= 1 and not correct
+  if(!ok){
+     btns += `<button class="btn btn-secondary" onclick="openGuideEmbeddedFrom(this)">Guide Me</button>`;
+  }
+  // Next Problem: show if correct and not last
+  if(ok && !isLastField){
+     btns += `<button class="btn btn-secondary next-problem-btn" onclick="nextFieldFrom(this)">Next Problem</button>`;
+  }
+  
+  actions.innerHTML = btns;
+
+  if(actions && fb && actions.previousElementSibling!==fb){
+    fb.insertAdjacentElement('afterend', actions);
+  }
+
+  cur.scrollIntoView({behavior:'smooth',block:'center'});
+  
+  refreshProg();
+  const correctCount=[...document.querySelectorAll('.field-in')].filter(f=>f.classList.contains('ok')).length;
+  if(correctCount === 8) {
+    PROBLEMS[currentProb].done = true;
+    renderPagination();
+    const modal = document.getElementById('congratsModal');
+    if(modal) modal.classList.add('open');
+    if(window.Confetti) window.Confetti.start();
+  } else {
+    // Toast removed as per user request
+    // toast(`✅  ${correctCount}/8 correct`);
+  }
+}
+
+function setCurrentFieldFrom(el){
+  const wraps=[...document.querySelectorAll('.answers-scroll .field-wrap')];
+  const w=el.closest('.field-wrap');
+  const idx=wraps.indexOf(w);
+  if(idx>=0) currentFieldIndex=idx;
+}
+function openGuideEmbeddedFrom(el){
+  setCurrentFieldFrom(el);
+  openGuideEmbedded();
+}
+function nextFieldFrom(el){
+  setCurrentFieldFrom(el);
+  nextField();
+}
+
+function clearAll(){
+  const p=PROBLEMS[currentProb];
+  if(p && p.fields){
+    p.fields.forEach(f=>{
+      f.value='';
+      f.status='';
+      f.wrongCount=0;
+    });
+    p.done=false;
+    renderPagination();
+  }
+  document.querySelectorAll('.field-in').forEach(f=>{
+    f.value='';
+    f.classList.remove('ok','err');
+  });
+  refreshProg();
+}
+
+let guidePickMode=false;
+let guideActiveKey=null;
+let guideStepIndex=0;
+let guideSelectedInputId=null;
+let guideStepUnlocked=false;
+let guideStepStates=[]; // per-topic step states [{done:boolean, value?:number}]
+let guideUiVariant=(new URLSearchParams(location.search).get('guide')==='popup')?'popup':'inline';
+let guideTopicStats={};
+let embeddedGuideHost=null;
+const CIRCUIT_CONST={R1:20,R2:30,R3:50,R4:20,V:10};
+
+function getGuideDynamicLevel(){
+  const sp=new URLSearchParams(location.search);
+  const q=sp.get('dyn');
+  if(q!==null){
+    const n=parseInt(q,10);
+    return Number.isFinite(n)?Math.max(0,Math.min(3,n)):0;
+  }
+  const s=localStorage.getItem('guideDynamicLevel');
+  if(s!==null){
+    const n=parseInt(s,10);
+    return Number.isFinite(n)?Math.max(0,Math.min(3,n)):0;
+  }
+  return 0;
+}
+const GUIDE_DYNAMIC_LEVEL=getGuideDynamicLevel();
+
+function applyGuideUiVariant(){
+  document.body.classList.toggle('guide-inline', guideUiVariant==='inline');
+}
+applyGuideUiVariant();
+
+function setGuideInlineOpen(open){
+  document.body.classList.toggle('guide-inline-open', !!open);
+  const apply=window.__triPaneApply;
+  if(typeof apply!=='function') return;
+  const leftEl=document.querySelector('.left');
+  const centerEl=document.querySelector('.center-guide');
+  if(!leftEl || !centerEl) return;
+  const lNow=leftEl.getBoundingClientRect().width||0;
+  const cNow=centerEl.getBoundingClientRect().width||0;
+  const lTarget=Math.max(lNow, 560);
+  const cTarget=open ? Math.max(cNow, 440) : 0;
+  apply(lTarget, cTarget);
+}
+
+function guideBadgeEl(){
+  if(guideUiVariant==='embedded') return null;
+  return document.getElementById(guideUiVariant==='inline'?'guideModeBadgeInline':'guideModeBadge');
+}
+function guideStepsEl(){
+  if(guideUiVariant==='embedded') return embeddedGuideHost;
+  return document.getElementById(guideUiVariant==='inline'?'guideStepsInline':'guideSteps');
+}
+function openInlineGuidePanel(){
+  const el=document.getElementById('inlineGuidePanel');
+  if(el)el.classList.add('open');
+  setGuideInlineOpen(true);
+}
+function closeInlineGuide(){
+  const el=document.getElementById('inlineGuidePanel');
+  if(el)el.classList.remove('open');
+  setGuideInlineOpen(false);
+  if(guideUiVariant==='inline'){
+    stopGuidePickMode();
+    clearGuideSelected();
+  }
+}
+
+const GUIDE_TOPICS={
+  r_total:{title:'Total Resistance (R_total)',steps:[
+    {type:'info',q:'Step 1: Understand the Circuit Structure',text:'Imagine current flowing from the top (+) to bottom (-). It goes through R1, then splits into two paths (R2 and R3), then rejoins to go through R4. This means R2 and R3 are in PARALLEL, while R1 and R4 are in SERIES with that parallel block.'},
+    {type:'mcq',q:'Which part should we simplify first?',opts:[
+      {t:'The parallel block (R2 || R3)',c:true,f:'Correct! Always simplify the complex parallel parts into a single number first.'},
+      {t:'The series resistors (R1 + R4)',c:false,f:'Not yet. We cannot add R1 and R4 directly until we handle the middle part.'}
+    ]},
+    {type:'input',q:'Step 2: Calculate R_parallel',placeholder:'R_eq (Ω)',ans:18.75,tol:0.02,hint:'Formula: \\(R_{\\mathrm{eq}}=\\dfrac{R_2 R_3}{R_2+R_3}\\). Here: \\(\\dfrac{30\\cdot50}{30+50}\\).'},
+    {type:'input',q:'Step 3: Calculate Total Resistance',placeholder:'R_total (Ω)',ans:58.75,tol:0.02,hint:'Now it is a simple series circuit. \\(R_{\\text{total}}=R_1+R_{\\mathrm{eq}}+R_4\\). Here: \\(20+18.75+20\\).'}
+  ]},
+  i_total:{title:'Total Current (I_total)',steps:[
+    {type:'info',q:'Concept: Ohm\'s Law',text:'Ohm\'s Law states that Current (I) = Voltage (V) / Resistance (R). This applies to the WHOLE circuit too.'},
+    {type:'input',q:'Calculate Total Current',placeholder:'I_total (A)',ans:0.1702,tol:0.001,hint:'Use \\(V_{\\text{source}}=10\\,\\mathrm{V}\\) and \\(R_{\\text{total}}=58.75\\,\\Omega\\). \\(I_{\\text{total}}=\\dfrac{10}{58.75}\\).'}
+  ]},
+  v_r1:{title:'Voltage Across R1 (V_R1)',steps:[
+    {type:'info',q:'Concept: Series Voltage Drop',text:'When current flows through a resistor, it uses up some voltage (Voltage Drop). Formula: V = I * R.'},
+    {type:'input',q:'Calculate Voltage Drop for R1',placeholder:'V_R1 (V)',ans:3.404,tol:0.03,hint:'Current through R1 is the total current. \\(V_{R_1}=I_{\\text{total}}\\cdot R_1=0.1702\\cdot20\\).'}
+  ]},
+  v_parallel:{title:'Voltage Across Parallel Branch',steps:[
+    {type:'info',q:'Concept: Voltage in Series',text:'The parallel block (R2||R3) acts like one big resistor in the series chain. It also has a voltage drop.'},
+    {type:'input',q:'Calculate Voltage across R2||R3',placeholder:'V_parallel (V)',ans:3.191,tol:0.03,hint:'\\(V_{\\text{parallel}}=I_{\\text{total}}\\cdot R_{\\mathrm{eq}}=0.1702\\cdot18.75\\).'}
+  ]},
+  v_r4:{title:'Voltage Across R4 (V_R4)',steps:[
+    {type:'info',q:'Concept: Final Series Resistor',text:'R4 is the last resistor in the series chain. It works just like R1.'},
+    {type:'input',q:'Calculate Voltage Drop for R4',placeholder:'V_R4 (V)',ans:3.404,tol:0.03,hint:'\\(V_{R_4}=I_{\\text{total}}\\cdot R_4=0.1702\\cdot20\\).'}
+  ]},
+  i_r2:{title:'Current Through R2 (I_R2)',steps:[
+    {type:'info',q:'Concept: Current Divider',text:'In the parallel branches, the voltage is the SAME (V_parallel), but current splits based on resistance. I = V / R.'},
+    {type:'input',q:'Calculate Current in R2',placeholder:'I_R2 (A)',ans:0.1064,tol:0.002,hint:'Use \\(V_{\\text{parallel}}=3.191\\,\\mathrm{V}\\) and \\(R_2=30\\,\\Omega\\). \\(I_{R_2}=\\dfrac{3.191}{30}\\).'}
+  ]},
+  i_r3:{title:'Current Through R3 (I_R3)',steps:[
+    {type:'info',q:'Concept: Remaining Current',text:'The rest of the current goes through R3. Calculation is the same: I = V / R.'},
+    {type:'input',q:'Calculate Current in R3',placeholder:'I_R3 (A)',ans:0.0638,tol:0.002,hint:'Use \\(V_{\\text{parallel}}=3.191\\,\\mathrm{V}\\) and \\(R_3=50\\,\\Omega\\). \\(I_{R_3}=\\dfrac{3.191}{50}\\).'}
+  ]},
+  p_total:{title:'Total Power (P_total)',steps:[
+    {type:'info',q:'Concept: Power',text:'Power is the rate of energy usage. Formula: P = Voltage * Current.'},
+    {type:'input',q:'Calculate Total Power',placeholder:'P_total (W)',ans:1.702,tol:0.02,hint:'Use \\(V_{\\text{source}}=10\\,\\mathrm{V}\\) and \\(I_{\\text{total}}=0.1702\\,\\mathrm{A}\\). \\(P_{\\text{total}}=VI=10\\cdot0.1702\\).'}
+  ]}
+};
+
+function setGuideBadge(text,accent){
+  const badge=guideBadgeEl();
+  if(!badge)return;
+  const dl = ` · DL${GUIDE_DYNAMIC_LEVEL}`;
+  badge.textContent=text + dl;
+  badge.className='guide-badge';
+  if(accent==='green'){badge.style.background='var(--green-light)';badge.style.color='var(--green)';return}
+  if(accent==='blue'){badge.style.background='var(--blue-light)';badge.style.color='var(--blue)';return}
+  badge.style.background='var(--surface-2)';badge.style.color='var(--text-muted)';
+}
+
+function ensureGuideStats(key){
+  if(!guideTopicStats[key]){
+    guideTopicStats[key]={wrongStreak:0,correctStreak:0,attempts:0,steps:{}};
+  }
+  return guideTopicStats[key];
+}
+
+function resolveGuidePolicy(key){
+  const stats=ensureGuideStats(key);
+  if(GUIDE_DYNAMIC_LEVEL===0) return {variant:'fixed',hintTier:0,label:'Fixed'};
+
+  let variant='standard';
+  let hintTier=0;
+
+  if(adhdMode || stressLevel>=4) variant='supportive';
+  else if(stressLevel<=2) variant='compact';
+
+  if(GUIDE_DYNAMIC_LEVEL>=2){
+    if(stats.wrongStreak>=2) variant='supportive';
+    if(stats.correctStreak>=2 && !adhdMode && stressLevel<=3) variant='compact';
+    if(stats.wrongStreak>=1) hintTier=1;
+    if(stats.wrongStreak>=2) hintTier=2;
+  }
+
+  if(GUIDE_DYNAMIC_LEVEL>=3){
+    const step=stats.steps[guideStepIndex]||{};
+    if((step.wrongCount||0)>=2) hintTier=Math.max(hintTier,2);
+  }
+
+  return {variant,hintTier,label:variant.charAt(0).toUpperCase()+variant.slice(1)};
+}
+
+function withExtraHint(base,extra){
+  if(!extra) return base;
+  if(!base) return extra;
+  return base + '<div class="guide-hint-gap"></div>' + extra;
+}
+
+function renderedStepForPolicy(key,idx,st,policy){
+  const out={...st};
+  if(st.type==='info'){
+    if(policy.variant==='compact'){
+      out.q=st.q.replace(/^(Concept|Step \d+|Step)( first|):\s*/,'');
+      out.text=st.text.replace(/^Step:\s*/,'');
+    } else if(policy.variant==='supportive'){
+      if(key==='r_total' && policy.hintTier>=1){
+        out.text=withExtraHint(st.text,`<span class="guide-hint-tag think">Think</span>What stays equal in parallel? Voltage. Why simplify first? It turns a branching region into one number so the series is clear.`);
+      }
+      if(key==='r_total' && policy.hintTier>=2){
+        out.text=withExtraHint(out.text,`<span class="guide-hint-tag check">Check</span>In parallel, \\(R_{\\mathrm{eq}}<\\min(R_2,R_3)\\). If your result is not < \\(${CIRCUIT_CONST.R2< CIRCUIT_CONST.R3?CIRCUIT_CONST.R2:CIRCUIT_CONST.R3}\\,\\Omega\\), revisit the formula.`);
+      }
+      if(key==='r_total' && idx===0){
+        out.text=withExtraHint('You will learn: identify parallel vs series, reduce the parallel block, verify using bounds.', out.text);
+      }
+      if(key==='i_total' && policy.hintTier>=1){
+        out.text=withExtraHint(st.text,`<span class="guide-hint-tag frame">Frame</span>Whole‑circuit Ohm’s Law. Known: \\(V_{\\text{source}}=${CIRCUIT_CONST.V}\\,\\mathrm{V}\\), \\(R_{\\text{total}}\\). Goal: \\(I_{\\text{total}}=V/R\\).`);
+      }
+      if(key==='i_total' && policy.hintTier>=2){
+        out.text=withExtraHint(out.text,`<span class="guide-hint-tag sanity">Sense</span>Larger \\(R_{\\text{total}}\\) → smaller current. Units must be Ampere (A).`);
+      }
+      if(key==='v_parallel' && policy.hintTier>=1){
+        out.text=withExtraHint(st.text,`<span class="guide-hint-tag idea">Idea</span>Series chain shares the same current. The parallel block’s drop is \\(I_{\\text{total}}\\times R_{\\mathrm{eq}}\\).`);
+      }
+      if(key==='v_parallel' && policy.hintTier>=2){
+        out.text=withExtraHint(out.text,`<span class="guide-hint-tag check">Check</span>\\(V_{R_1}+V_{\\text{parallel}}+V_{R_4}=V_{\\text{source}}\\). If not, one term is miscomputed.`);
+      }
+      if(key==='i_r2' && policy.hintTier>=1){
+        out.text=withExtraHint(st.text,`<span class="guide-hint-tag concept">Concept</span>Same voltage across branches; current divides by resistance. Higher \\(R\\) → lower \\(I\\).`);
+      }
+      if(key==='i_r3' && policy.hintTier>=1){
+        out.text=withExtraHint(st.text,`<span class="guide-hint-tag compare">Compare</span>\\(R_3>${CIRCUIT_CONST.R2}\\,\\Omega\\) so \\(I_{R_3}<I_{R_2}\\). This helps catch swapped results.`);
+      }
+      if(key==='p_total' && policy.hintTier>=1){
+        out.text=withExtraHint(st.text,`<span class="guide-hint-tag frame">Frame</span>Power is “how fast energy is used.” Use source voltage with total current: \\(P=VI\\).`);
+      }
+      if(key==='p_total' && policy.hintTier>=2){
+        out.text=withExtraHint(out.text,`<span class="guide-hint-tag sanity">Sense</span>If \\(I\\) halves, \\(P\\) halves (with fixed \\(V\\)). Units must be Watt (W).`);
+      }
+    }
+    return out;
+  }
+
+    if(st.type==='input'){
+      let hint=st.hint||'';
+
+    const isCompact = policy.variant==='compact';
+    const row = (label, cls, text) => `<div class="guide-hint-row"><span class="guide-hint-tag ${cls}">${label}</span><span class="hint-text">${text}</span>${cls==='formula'?'<button class="hint-copy" onclick="copyHintRow(this)" title="Copy">Copy</button>':''}</div>`;
+    const listWrap = rows => `<div class="guide-hint-list">${rows.join('')}</div>`;
+
+      if(key==='r_total' && idx===2){
+      const fText='\\(R_{\\mathrm{eq}} = \\dfrac{R_2 R_3}{R_2 + R_3}\\)';
+      if(isCompact){
+        hint = listWrap([row('Formula','formula',fText), row('Concept','concept','\\(R_{\\mathrm{eq}}<\\min(R_2,R_3)\\)')]);
+      } else {
+        const hText='\\(\\dfrac{30\\cdot50}{30+50}\\)';
+        const sText=`\\(R_2=${CIRCUIT_CONST.R2}\\,\\Omega\\), \\(R_3=${CIRCUIT_CONST.R3}\\,\\Omega\\)`;
+        const cText=`\\(R_{\\mathrm{eq}}<${CIRCUIT_CONST.R2< CIRCUIT_CONST.R3?CIRCUIT_CONST.R2:CIRCUIT_CONST.R3}\\,\\Omega\\)`;
+        const rows=[row('Formula','formula',fText)];
+        if(policy.variant==='supportive' || policy.hintTier>=1) rows.push(row('Here','here',hText));
+        if(policy.variant==='supportive' || policy.hintTier>=2) rows.push(row('Substitute','subs',sText), row('Concept','concept',cText));
+        hint = listWrap(rows);
+      }
+      }
+      if(key==='r_total' && idx===3){
+      const fText='\\(R_{\\text{total}} = R_1 + R_{\\mathrm{eq}} + R_4\\)';
+      if(isCompact){
+        hint = listWrap([row('Formula','formula',fText)]);
+      } else {
+        const sText=`\\(R_1=${CIRCUIT_CONST.R1}\\,\\Omega\\), \\(R_4=${CIRCUIT_CONST.R4}\\,\\Omega\\)`;
+        const rows=[row('Formula','formula',fText)];
+        if(policy.variant==='supportive' || policy.hintTier>=2) rows.push(row('Substitute','subs',sText), row('Concept','concept','Total must exceed each single resistor.'));
+        hint = listWrap(rows);
+      }
+      }
+      if(key==='i_total'){
+      const fText='\\(I_{\\text{total}} = \\dfrac{V_{\\text{source}}}{R_{\\text{total}}}\\)';
+      if(isCompact){
+        hint = listWrap([row('Formula','formula',fText)]);
+      } else {
+        const kText=`\\(V_{\\text{source}}=${CIRCUIT_CONST.V}\\,\\mathrm{V}\\)`;
+        const rows=[row('Formula','formula',fText)];
+        if(policy.variant==='supportive' || policy.hintTier>=1) rows.push(row('Known','here',kText));
+        if(policy.variant==='supportive' && policy.hintTier>=2) rows.push(row('Concept','concept','Units: A. Larger \\(R_{\\text{total}}\\) → smaller \\(I\\).'));
+        hint = listWrap(rows);
+      }
+      }
+      if(key==='v_r1'){
+      const fText='\\(V_{R_1} = I_{\\text{total}} \\times R_1\\)';
+      if(isCompact){
+        hint = listWrap([row('Formula','formula',fText)]);
+      } else {
+        const rows=[row('Formula','formula',fText)];
+        if(policy.variant==='supportive' && policy.hintTier>=2) rows.push(row('Check','concept','Sum drops equals \\(V_{\\text{source}}\\).'));
+        hint = listWrap(rows);
+      }
+      }
+      if(key==='v_parallel'){
+      const fText='\\(V_{\\text{parallel}} = I_{\\text{total}} \\cdot R_{\\mathrm{eq}}\\)';
+      if(isCompact){
+        hint = listWrap([row('Formula','formula',fText)]);
+      } else {
+        const rows=[row('Formula','formula',fText)];
+        if(policy.variant==='supportive' && policy.hintTier>=2) rows.push(row('Check','concept','\\(V_{R_1}+V_{\\text{parallel}}+V_{R_4}=V_{\\text{source}}\\)'));
+        hint = listWrap(rows);
+      }
+      }
+      if(key==='v_r4'){
+      const fText='\\(V_{R_4} = I_{\\text{total}} \\times R_4\\)';
+      hint = listWrap([row('Formula','formula',fText)]);
+      }
+      if(key==='i_r2'){
+      const fText='\\(I_{R_2} = \\dfrac{V_{\\text{parallel}}}{R_2}\\)';
+      if(isCompact){
+        hint = listWrap([row('Formula','formula',fText), row('Concept','concept','Expect \\(I_{R_2}>I_{R_3}\\) if \\(R_2<R_3\\).')]);
+      } else {
+        const rows=[row('Formula','formula',fText)];
+        if(policy.variant==='supportive' && policy.hintTier>=2) rows.push(row('Compare','concept','Since \\(R_2<R_3\\), expect \\(I_{R_2}>I_{R_3}\\).'));
+        hint = listWrap(rows);
+      }
+      }
+      if(key==='i_r3'){
+      const fText='\\(I_{R_3} = \\dfrac{V_{\\text{parallel}}}{R_3}\\)';
+      const rows=[row('Formula','formula',fText)];
+      if(!isCompact && (policy.variant==='supportive' && policy.hintTier>=2)) rows.push(row('Sense','concept','Larger \\(R\\) → smaller \\(I\\). Expect \\(I_{R_3}<I_{R_2}\\).'));
+      hint = listWrap(rows);
+      }
+      if(key==='p_total'){
+      const fText='\\(P_{\\text{total}} = V_{\\text{source}} I_{\\text{total}}\\)';
+      const rows=[row('Formula','formula',fText)];
+      if(!isCompact && (policy.variant==='supportive' && policy.hintTier>=2)) rows.push(row('Sense','concept','If \\(I\\) doubles (same \\(V\\)), power doubles.'));
+      hint = listWrap(rows);
+      }
+
+    if(policy.variant==='compact'){
+      hint=hint
+        .replace('Ohm’s Law: ','')
+        .replace('Use ','')
+        .replace('First ','')
+        .replace('then ','');
+    }
+
+    out.hint=hint;
+    return out;
+  }
+
+  if(st.type==='mcq'){
+    if(policy.variant==='compact'){
+      out.q=st.q.replace(/^Before you calculate anything:\s*/,'');
+    }
+    return out;
+  }
+
+  return out;
+}
+
+function clearGuideSelected(){
+  document.querySelectorAll('.field-in.guide-selected').forEach(x=>x.classList.remove('guide-selected'));
+}
+
+function startGuidePickMode(){
+  if(guideUiVariant==='embedded'){ return; }
+  guidePickMode=true;
+  guideActiveKey=null;
+  guideStepIndex=0;
+  guideStepUnlocked=false;
+  guideSelectedInputId=null;
+  document.body.classList.remove('guide-summary-mode');
+  clearGuideSelected();
+  document.body.classList.add('guide-pick');
+  setGuideBadge('Pick a Box', 'blue');
+  const container=guideStepsEl();
+  if(container){
+    container.innerHTML=`
+      <div class="guide-pick-card">
+        <div class="guide-pick-title">Pick a problem box to get targeted guidance</div>
+        <div class="guide-pick-sub">Hover over any answer input on the left to highlight it, then click. I’ll guide only that item with “concept → why → how”, using fill‑in steps to move forward.</div>
+      </div>
+    `;
+  }
+}
+
+function stopGuidePickMode(){
+  guidePickMode=false;
+  document.body.classList.remove('guide-pick');
+}
+
+function openGuideTopic(key,inputId){
+  stopGuidePickMode();
+  guideActiveKey=key;
+  guideStepIndex=0;
+  guideStepUnlocked=false;
+  guideStepStates=[];
+  ensureGuideStats(key);
+  guideSelectedInputId=inputId||null;
+  clearGuideSelected();
+  document.body.classList.remove('guide-summary-mode');
+  if(guideSelectedInputId){
+    const el=document.getElementById(guideSelectedInputId);
+    if(el)el.classList.add('guide-selected');
+  }
+  renderGuideTopic();
+}
+
+function renderGuideTopic(){
+  const topic=GUIDE_TOPICS[guideActiveKey];
+  const container=guideStepsEl();
+  if(!topic||!container){startGuidePickMode();return}
+  setGuideBadge(topic.title,'green');
+  const policy=resolveGuidePolicy(guideActiveKey);
+  const stepCount=topic.steps.length;
+  const headCtrl = (guideUiVariant==='embedded')
+    ? `
+    <div class="guide-flow-head">
+      <div class="guide-flow-title">${topic.title} <span class="guide-step-pill">${policy.label}</span></div>
+      <button class="btn btn-ghost" onclick="closeGuideEmbedded()" aria-label="Close">×</button>
+    </div>
+    `
+    : `
+    <div class="guide-flow-head">
+      <div class="guide-flow-title">${topic.title} <span class="guide-step-pill">${policy.label}</span></div>
+      <button class="btn btn-ghost" onclick="closeGuide()" aria-label="Close">×</button>
+    </div>
+    `;
+  let blocks='';
+  for(let i=0;i<=guideStepIndex && i<stepCount;i++){
+    const st=renderedStepForPolicy(guideActiveKey,i,topic.steps[i],policy);
+    const done = guideStepStates[i] && guideStepStates[i].done;
+    if(i<guideStepIndex){
+      // Render completed summary block (non-interactive)
+      let extra='';
+      if(st.type==='input' && guideStepStates[i] && typeof guideStepStates[i].value==='number'){
+        extra = `<div class="step-detail">Your answer: ${guideStepStates[i].value}</div>`;
+      } else if(st.type==='info'){
+        extra = `<div class="step-detail">${st.text}</div>`;
+      }
+      blocks += `
+        <div class="guide-step" style="border-left:4px solid var(--green);background:var(--surface);cursor:pointer" onclick="goToGuideStep(${i})">
+          <div class="step-num">✓</div>
+          <div class="step-body">
+            <div class="step-title">Step ${i+1} — ${st.q.replace(/<[^>]+>/g,'')}</div>
+            ${extra}
+          </div>
+        </div>
+      `;
+      continue;
+    }
+    // Current interactive block
+    let bodyHtml='';
+    guideStepUnlocked = false;
+    if(st.type==='info'){
+      bodyHtml=`<div class="guide-q-text">${st.q}</div><div class="step-detail">${st.text}</div>`;
+      guideStepUnlocked=true;
+    } else if(st.type==='mcq'){
+      bodyHtml=`
+        <div class="guide-q-text" id="guideQuestion">${st.q}</div>
+        <div class="guide-q-opts" role="radiogroup" aria-labelledby="guideQuestion">
+          ${st.opts.map((o,i2)=>`<button class="guide-opt" role="radio" tabindex="${i2===0?0:-1}" aria-checked="false" id="guideOpt${i2}" onclick="guidePickOption(${i2})">${o.t}</button>`).join('')}
+        </div>
+        <div class="guide-feedback" id="guideFlowFeedback" role="status" aria-live="polite"></div>
+      `;
+    } else if(st.type==='input'){
+      const prevVal = guideStepStates[i] && typeof guideStepStates[i].value==='number' ? guideStepStates[i].value : (guideStepStates[i] && typeof guideStepStates[i].draft==='string' ? guideStepStates[i].draft : '');
+      bodyHtml=`
+        <div class="guide-q-text" id="guideQuestion">${st.q}</div>
+        <div class="step-detail" id="guideHintText">${st.hint}</div>
+        <div class="guide-fill-row">
+          <input class="guide-fill-input" id="guideFillInput" inputmode="decimal" placeholder="${st.placeholder}" value="${prevVal}">
+          <button class="btn btn-secondary" onclick="checkGuideFill()" aria-label="Check your answer">Check</button>
+        </div>
+        <div class="guide-feedback" id="guideFlowFeedback" role="status" aria-live="polite"></div>
+      `;
+    }
+    const nextLabel = i === stepCount - 1 ? 'Done → Check the Summary' : 'Next Step →';
+    const nextShow = guideStepUnlocked ? 'show' : '';
+    blocks += `
+      <div class="guide-step">
+        <div class="step-num">${i+1}</div>
+        <div class="step-body">
+          <div class="guide-step-pill">Step ${i+1} of ${stepCount}</div>
+          <div class="guide-q-card">
+            ${bodyHtml}
+            <button class="btn guide-next-btn ${nextShow} btn-primary" id="guideFlowNext" onclick="nextGuideTopic()" aria-label="Proceed to next step">${nextLabel}</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = `<div class="interactive-guide">${headCtrl}${blocks}</div>`;
+  typesetMath(container);
+  applyTypographyPolish(container);
+  setupGuideAccessibility(container);
+  if(guideUiVariant==='embedded'){ container.classList.add('open'); }
+}
+
+function guidePickOption(idx){
+  const topic=GUIDE_TOPICS[guideActiveKey];
+  const step=topic && topic.steps[guideStepIndex];
+  if(!step || step.type!=='mcq') return;
+  const opt=step.opts[idx];
+  const stats=ensureGuideStats(guideActiveKey);
+  stats.attempts++;
+  const stepMeta=stats.steps[guideStepIndex]||(stats.steps[guideStepIndex]={attempts:0,wrongCount:0});
+  stepMeta.attempts++;
+  const fb=document.getElementById('guideFlowFeedback');
+  const btn=document.getElementById('guideOpt'+idx);
+  if(!fb||!btn) return;
+  let message=opt.f;
+  if(opt.c){
+    document.querySelectorAll('.guide-opt').forEach(b=>b.style.pointerEvents='none');
+    btn.classList.add('correct');
+    stats.correctStreak++;
+    stats.wrongStreak=0;
+    guideStepUnlocked=true;
+    guideStepStates[guideStepIndex]={done:true};
+    const next=document.getElementById('guideFlowNext');
+    if(next) next.classList.add('show');
+    fb.className='guide-feedback show ok';
+  } else {
+    btn.classList.add('wrong');
+    stepMeta.wrongCount=(stepMeta.wrongCount||0)+1;
+    stats.wrongStreak++;
+    stats.correctStreak=0;
+    if(GUIDE_DYNAMIC_LEVEL>=2 && stats.wrongStreak>=2){
+      message=opt.f+' Hint: in parallel, both ends connect to the same two nodes (same voltage).';
+    }
+    fb.className='guide-feedback show err';
+  }
+  fb.textContent=message;
+}
+
+function checkGuideFill(){
+  const topic=GUIDE_TOPICS[guideActiveKey];
+  const step=topic && topic.steps[guideStepIndex];
+  const inp=document.getElementById('guideFillInput');
+  const fb=document.getElementById('guideFlowFeedback');
+  if(!step || step.type!=='input' || !inp || !fb) return;
+  const stats=ensureGuideStats(guideActiveKey);
+  stats.attempts++;
+  const stepMeta=stats.steps[guideStepIndex]||(stats.steps[guideStepIndex]={attempts:0,wrongCount:0});
+  stepMeta.attempts++;
+  guideStepStates[guideStepIndex]=guideStepStates[guideStepIndex]||{};
+  guideStepStates[guideStepIndex].draft=inp.value;
+  const val=parseFloat(inp.value);
+  if(isNaN(val)){
+    fb.textContent='Enter a number first.';
+    fb.className='guide-feedback show';
+    inp.style.borderColor='var(--red)';
+    return;
+  }
+  const ok=Math.abs(val-step.ans)<=step.tol;
+  if(ok){
+    fb.textContent='Nice. That matches — carry it to the next step.';
+    fb.className='guide-feedback show ok';
+    inp.style.borderColor='var(--green)';
+    stats.correctStreak++;
+    stats.wrongStreak=0;
+    guideStepUnlocked=true;
+    guideStepStates[guideStepIndex]={done:true,value:val};
+    const next=document.getElementById('guideFlowNext');
+    if(next) next.classList.add('show');
+  } else {
+    fb.textContent='Not quite. Re-check your formula/substitution and try again.';
+    fb.className='guide-feedback show err';
+    inp.style.borderColor='var(--red)';
+    stepMeta.wrongCount=(stepMeta.wrongCount||0)+1;
+    stats.wrongStreak++;
+    stats.correctStreak=0;
+    const policy=resolveGuidePolicy(guideActiveKey);
+    const rendered=renderedStepForPolicy(guideActiveKey,guideStepIndex,step,policy);
+    const hintEl=document.getElementById('guideHintText');
+    if(hintEl && rendered && typeof rendered.hint==='string'){ hintEl.innerHTML=rendered.hint; typesetMath(hintEl); }
+  }
+}
+
+function nextGuideTopic(){
+  const topic=GUIDE_TOPICS[guideActiveKey];
+  if(!topic) return startGuidePickMode();
+  if(!guideStepUnlocked) return;
+  if(guideStepIndex >= topic.steps.length - 1){
+    showGuideSummary();
+    return;
+  }
+  guideStepIndex++;
+  guideStepUnlocked=false;
+  renderGuideTopic();
+}
+
+function setupGuideAccessibility(root){
+  root.querySelectorAll('.guide-q-opts').forEach(group=>{
+    const items=[...group.querySelectorAll('.guide-opt')];
+    let idx=items.findIndex(b=>b.getAttribute('tabindex')==='0');
+    if(idx<0) idx=0;
+    items.forEach((b,i)=>b.addEventListener('keydown',e=>{
+      if(e.key==='ArrowDown' || e.key==='ArrowRight'){
+        e.preventDefault();
+        idx=(i+1)%items.length;
+        items.forEach(x=>x.setAttribute('tabindex','-1'));
+        items[idx].setAttribute('tabindex','0'); items[idx].focus();
+      } else if(e.key==='ArrowUp' || e.key==='ArrowLeft'){
+        e.preventDefault();
+        idx=(i-1+items.length)%items.length;
+        items.forEach(x=>x.setAttribute('tabindex','-1'));
+        items[idx].setAttribute('tabindex','0'); items[idx].focus();
+      } else if(e.key==='Enter' || e.key===' '){
+        e.preventDefault();
+        items[i].click();
+      }
+    }));
+  });
+}
+function applyTypographyPolish(root){
+  const sels=['.hint-text','.step-detail','.guide-feedback'];
+  const nbsp='\u00A0';
+  const fixText=(s)=>{
+    s=s.replace(/\s([\.\,\;\:\!\?\)\]])/g, nbsp+'$1');
+    s=s.replace(/([\(\[\{])\s/g, '$1'+nbsp);
+    s=s.replace(/\s\\Omega/g, nbsp+'\\Omega');
+    return s;
+  };
+  sels.forEach(sel=>{
+    root.querySelectorAll(sel).forEach(el=>{
+      const walker=document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+      const nodes=[];
+      while(walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(n=>{
+        n.nodeValue = fixText(n.nodeValue);
+      });
+    });
+  });
+}
+function getGuideRecap(key, policy){
+  const tone = (policy && policy.variant) || 'standard';
+  const baseLead = tone==='compact'
+    ? 'Key ideas you can reuse immediately.'
+    : 'Review these points, then head back to pick another problem.';
+  const mk = (title, items) => ({title:'You got it! Here’s a quick recap of the key ideas:', lead: baseLead, items});
+  const short = s => s
+    .replace(/\s*\(.*?\)/g,'')
+    .replace(/\s+which\s+/gi,' ')
+    .replace(/^\s+|\s+$/g,'');
+  const addTip = s => s + (s.endsWith('.')?'':'') + ' Tip: keep an eye on units and node relationships.';
+  
+  const adjustItems = items => items.map(it=>{
+    let d = it.d;
+    if(tone==='compact'){
+      d = short(d.split('. ')[0] || d);
+    } else if(tone==='supportive'){
+      d = addTip(d);
+    }
+    return {...it, d};
+  });
+  
+  if(key==='r_total'){
+    return mk('You got it! Here’s a quick recap of the key ideas:', adjustItems([
+      {t:'Identify Parallel Resistors',d:'R2 and R3 share the same two nodes, so they are in parallel and have the same voltage.'},
+      {t:'Parallel Resistance Formula',d:'Use \\(R_{\\mathrm{eq}} = \\dfrac{R_2 R_3}{R_2 + R_3}\\) to reduce the parallel branch.'},
+      {t:'Series Simplification',d:'Combine series parts: \\(R_{\\text{total}} = R_1 + R_{\\mathrm{eq}} + R_4\\).'},
+      {t:'Apply Ohm’s Law Next',d:'With R_total, you can find I_total from the source voltage and proceed to voltages/currents.'}
+    ]));
+  }
+  if(key==='i_total'){
+    return mk('You got it! Here’s a quick recap of the key ideas:', adjustItems([
+      {t:'Equivalent Circuit First',d:'Get the total resistance R_total from previous steps.'},
+      {t:'Use Ohm’s Law',d:'\\(I_{\\text{total}}=\\dfrac{V_{\\text{source}}}{R_{\\text{total}}}\\) (here \\(V_{\\text{source}}=10\\,\\mathrm{V}\\)).'},
+      {t:'Plug In Values',d:'Use your computed R_total with the source voltage.'},
+      {t:'Unit Check',d:'Current is measured in amperes (A).'}
+    ]));
+  }
+  if(key==='v_r1'){
+    return mk('You got it! Here’s a quick recap of the key ideas:', adjustItems([
+      {t:'Same Current in Series',d:'R1 carries I_total in a series path.'},
+      {t:'Voltage Drop',d:'\\(V_{R_1}=I_{\\text{total}}\\,R_1\\).'},
+      {t:'Units',d:'Voltage is in volts (V).'},
+      {t:'Power Link',d:'You can compute power using P = V × I or V²/R.'}
+    ]));
+  }
+  if(key==='v_parallel'){
+    return mk('You got it! Here’s a quick recap of the key ideas:', adjustItems([
+      {t:'Same Voltage in Parallel',d:'Both branches share the same voltage.'},
+      {t:'Equivalent View',d:'\\(V_{\\text{parallel}}=I_{\\text{total}}\\,R_{\\mathrm{eq}}\\).'},
+      {t:'Order of Steps',d:'Find R_eq first, then multiply by I_total.'},
+      {t:'Use It Next',d:'This voltage helps compute each branch current.'}
+    ]));
+  }
+  if(key==='v_r4'){
+    return mk('You got it! Here’s a quick recap of the key ideas:', adjustItems([
+      {t:'Same Current in Series',d:'R4 also carries I_total.'},
+      {t:'Voltage Drop',d:'\\(V_{R_4}=I_{\\text{total}}\\,R_4\\).'},
+      {t:'Energy View',d:'You can find P_R4 if needed.'},
+      {t:'Consistency',d:'Sum of all drops equals the source voltage.'}
+    ]));
+  }
+  if(key==='i_r2'){
+    return mk('You got it! Here’s a quick recap of the key ideas:', adjustItems([
+      {t:'Same Voltage in Parallel',d:'R2 sees V_parallel.'},
+      {t:'Ohm’s Law',d:'\\(I_{R_2}=\\dfrac{V_{\\text{parallel}}}{R_2}\\).'},
+      {t:'Where V_parallel Comes From',d:'\\(V_{\\text{parallel}}=I_{\\text{total}}\\,R_{\\mathrm{eq}}\\) of the parallel block.'},
+      {t:'Relationship',d:'Branch currents add back up at the node to match the series current.'}
+    ]));
+  }
+  if(key==='i_r3'){
+    return mk('You got it! Here’s a quick recap of the key ideas:', adjustItems([
+      {t:'Same Voltage in Parallel',d:'R3 sees V_parallel.'},
+      {t:'Ohm’s Law',d:'I_R3 = V_parallel / R3.'},
+      {t:'Magnitude',d:'Larger resistance → smaller branch current.'},
+      {t:'Check',d:'I_R2 + I_R3 equals the current through the parallel equivalent.'}
+    ]));
+  }
+  if(key==='p_total'){
+    return mk('You got it! Here’s a quick recap of the key ideas:', adjustItems([
+      {t:'Definition',d:'Total power delivered by the source is P_total = V_source × I_total.'},
+      {t:'Balance',d:'Source power equals total power consumed by the circuit.'},
+      {t:'Consistency',d:'Sum of element powers should be close to P_total.'},
+      {t:'Units',d:'Power is in watts (W).'}
+    ]));
+  }
+  return mk('You got it! Here’s a quick recap of the key ideas:', adjustItems([
+    {t:'Concept',d:'Understand the physical meaning behind the step.'},
+    {t:'Formula',d:'Recall and apply the right equation.'},
+    {t:'Computation',d:'Substitute carefully and check units.'},
+    {t:'Transfer',d:'Apply the method to similar problems.'}
+  ]));
+}
+
+function guideRecapPageHtml(key,policy){
+  const r=getGuideRecap(key,policy);
+  const items=r.items.map((it,i)=>`
+    <div class="summary-card">
+      <div class="summary-icon">${i+1}</div>
+      <div class="summary-body">
+        <div class="summary-title">${it.t}</div>
+        <div class="summary-detail">${it.d}</div>
+      </div>
+    </div>
+  `).join('');
+  return `
+    <div class="guide-summary">
+      <div class="summary-card">
+        <div class="summary-icon">✓</div>
+        <div class="summary-body">
+          <div class="summary-title">🎉 ${r.title}</div>
+          <div class="summary-detail">${r.lead}</div>
+        </div>
+      </div>
+      <div class="summary-grid">
+        ${items}
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px">
+        <button class="btn btn-secondary" onclick="ackGuideRecap()">Review another item</button>
+        <button class="btn btn-ghost" style="margin-left:8px" onclick="copyGuideSummary()">Copy Summary</button>
+      </div>
+    </div>
+  `;
+}
+
+function copyGuideSummary(){
+  const box=document.getElementById('guideContent');
+  if(!box) return;
+  const txt=box.innerText.trim();
+  navigator.clipboard.writeText(txt).then(()=>toast('📋  Summary copied'));
+}
+function showGuideSummary(){
+  const topic=GUIDE_TOPICS[guideActiveKey];
+  const container=guideStepsEl();
+  if(!topic||!container){startGuidePickMode();return}
+  const policy=resolveGuidePolicy(guideActiveKey);
+  const headCtrl = (guideUiVariant==='embedded')
+    ? `
+      <div class="guide-flow-head">
+        <div class="guide-flow-title">${topic.title} <span class="guide-step-pill">Summary${policy && policy.label ? ' • '+policy.label : ''}</span></div>
+        <button class="btn btn-ghost" onclick="closeGuideEmbedded()" aria-label="Close">×</button>
+      </div>
+    `
+    : `
+      <div class="guide-flow-head">
+        <div class="guide-flow-title">${topic.title} <span class="guide-step-pill">Summary${policy && policy.label ? ' • '+policy.label : ''}</span></div>
+        <button class="btn btn-ghost" onclick="closeGuide()" aria-label="Close">×</button>
+      </div>
+    `;
+  const summary=guideRecapPageHtml(guideActiveKey, policy);
+  container.innerHTML = `<div class="interactive-guide">${headCtrl}${summary}</div>`;
+  typesetMath(container);
+  document.body.classList.add('guide-summary-mode');
+}
+
+function ackGuideRecap(){
+  if(guideUiVariant==='embedded'){ 
+    closeGuideEmbedded(); 
+  } else { 
+    closeGuide(); 
+  }
+}
+
+function goToGuideStep(i){
+  const topic=GUIDE_TOPICS[guideActiveKey];
+  if(!topic) return;
+  const max=topic.steps.length-1;
+  guideStepIndex=Math.max(0,Math.min(i,max));
+  guideStepUnlocked=false;
+  renderGuideTopic();
+}
+
+document.addEventListener('click', e=>{
+  if(!guidePickMode) return;
+  const inp=e.target.closest && e.target.closest('.field-in');
+  if(!inp) return;
+  const key=inp.dataset.guideKey;
+  if(!key) return;
+  e.preventDefault();
+  e.stopPropagation();
+  openGuideTopic(key, inp.id);
+});
+
+// ── TODO ──────────────────────────────────────────────
+function toggleDrawer(){document.getElementById('todoDrawer').classList.toggle('open');document.getElementById('veil').classList.toggle('open')}
+function toggleItem(el){
+  el.classList.toggle('done');
+  const cb=el.querySelector('.todo-cb');
+  cb.innerHTML=el.classList.contains('done')?'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':'';
+  updateBadge();
+}
+function updateBadge(){const n=document.querySelectorAll('.todo-item:not(.done)').length,b=document.getElementById('badgeCount');b.textContent=n;b.style.display=n>0?'flex':'none'}
+function addTask(){const inp=document.getElementById('newTask'),v=inp.value.trim();if(!v)return;const item=document.createElement('div');item.className='todo-item';item.onclick=function(){toggleItem(this)};item.innerHTML=`<div class="todo-cb"></div><div><div class="todo-item-text">${v}</div><div class="todo-item-meta">Added now</div></div>`;document.getElementById('grpToday').appendChild(item);inp.value='';updateBadge()}
+
+// ── CHAT ──────────────────────────────────────────────
+let chatOpen=false;
+let adhdMode=false,responseStyle='concise',contextLen='short',stressLevel=4,chatFontLarge=false;
+
+// Settings panel
+function toggleChatSettings(){document.getElementById('chatSettings').classList.toggle('open')}
+
+function setStyle(s,el){responseStyle=s;el.closest('.seg-ctrl').querySelectorAll('.seg').forEach(x=>x.classList.remove('on'));el.classList.add('on')}
+function setContext(c,el){contextLen=c;el.closest('.seg-ctrl').querySelectorAll('.seg').forEach(x=>x.classList.remove('on'));el.classList.add('on')}
+function setFontSize(f,el){chatFontLarge=f==='large';el.closest('.seg-ctrl').querySelectorAll('.seg').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('chatMsgs').style.fontSize=chatFontLarge?'14px':''}
+function toggleADHD(){
+  adhdMode=!adhdMode;
+  const btn=document.getElementById('adhdToggle');btn.classList.toggle('on',adhdMode);
+  const msgs=document.getElementById('chatMsgs');
+  msgs.style.lineHeight=adhdMode?'1.9':'';
+  msgs.style.fontSize=adhdMode?'13.5px':'';
+  toast(adhdMode?'⚡  Dynamic Adjust Mode on — responses simplified':'Dynamic Adjust Mode off');
+}
+function setStress(v){
+  stressLevel=parseInt(v);
+  const labels=['','Low','Low-Med','Medium','Med-High','High'];
+  document.getElementById('stressLabel').textContent=labels[stressLevel];
+}
+
+// Voice input
+let mediaRecorder=null,recognizing=false;
+function toggleVoice(){
+  const btn=document.getElementById('voiceBtn');
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){toast('⚠️  Speech recognition not supported in this browser');return}
+  if(recognizing){recognizing=false;btn.classList.remove('recording');if(window._sr)window._sr.stop();return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const sr=new SR();window._sr=sr;
+  sr.continuous=false;sr.interimResults=false;sr.lang='en-US';
+  sr.onstart=()=>{recognizing=true;btn.classList.add('recording');toast('🎙️  Listening…')};
+  sr.onresult=e=>{
+    const t=e.results[0][0].transcript;
+    document.getElementById('chatIn').value=t;
+    autoH(document.getElementById('chatIn'));
+    toast('🎙️  Got it!');
+  };
+  sr.onerror=()=>{recognizing=false;btn.classList.remove('recording');toast('⚠️  Could not hear you — try again')};
+  sr.onend=()=>{recognizing=false;btn.classList.remove('recording')};
+  sr.start();
+}
+
+// ── CHAT RESIZE ───────────────────────────────────────
+(function(){
+  const handle = document.getElementById('chatResizeHandle');
+  const panel = document.getElementById('tutorPanel');
+  if(!handle || !panel) return;
+
+  let isResizing = false, startX, startY, startW, startH;
+  
+  handle.addEventListener('mousedown', e => {
+    isResizing = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startW = panel.offsetWidth;
+    startH = panel.offsetHeight;
+    document.body.style.cursor = 'nwse-resize';
+    panel.style.transition = 'none'; // Disable transition during drag
+    e.preventDefault(); // Prevent text selection
+  });
+  
+  document.addEventListener('mousemove', e => {
+    if(!isResizing) return;
+    
+    // Dragging top-left corner:
+    // Moving left (negative dx) -> Increases width
+    // Moving up (negative dy) -> Increases height
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    
+    // Since we are anchored bottom-right:
+    // reducing x (moving left) increases width
+    // reducing y (moving up) increases height
+    const newW = startW - dx;
+    const newH = startH - dy;
+    
+    panel.style.width = newW + 'px';
+    panel.style.height = newH + 'px';
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if(isResizing) {
+      isResizing = false;
+      document.body.style.cursor = '';
+      panel.style.transition = ''; // Re-enable transitions
+    }
+  });
+})();
+
+// Remove phantom cursor icon if it exists
+// (This was likely caused by a leftover SVG from the previous Chat FAB that was partially deleted or mis-styled)
+// Checking for any stray SVGs in body
+document.addEventListener('DOMContentLoaded', () => {
+  const fabs = document.querySelectorAll('.chat-fab');
+  if(fabs.length > 1) {
+    // Keep only the last one or remove duplicates
+  }
+});
+
+// Toolbar drag-to-scroll
+document.addEventListener('DOMContentLoaded', ()=>{
+  const tb=document.querySelector('.draw-tb');
+  if(!tb) return;
+  let isDown=false,startX=0,startSL=0,moved=false;
+  function onDown(e){
+    isDown=true;moved=false;
+    startX=e.touches?e.touches[0].pageX:e.pageX;
+    startSL=tb.scrollLeft;
+    tb.classList.add('dragging');
+  }
+  function onMove(e){
+    if(!isDown) return;
+    const x=e.touches?e.touches[0].pageX:e.pageX;
+    const dx=(x-startX);
+    if(Math.abs(dx)>3) moved=true;
+    tb.scrollLeft=startSL-dx;
+    e.preventDefault();
+  }
+  function onUp(){
+    isDown=false;tb.classList.remove('dragging');
+  }
+  tb.addEventListener('mousedown',onDown);
+  tb.addEventListener('touchstart',onDown,{passive:true});
+  document.addEventListener('mousemove',onMove,{passive:false});
+  document.addEventListener('touchmove',onMove,{passive:false});
+  document.addEventListener('mouseup',onUp);
+  document.addEventListener('touchend',onUp);
+  tb.addEventListener('click',e=>{ if(moved){ e.preventDefault(); e.stopPropagation(); }});
+});
+
+// ── TUTOR PANEL & SETTINGS ────────────────────────────
+function openTutorPanel(tabName) {
+  const p = document.getElementById('tutorPanel');
+  p.classList.add('open');
+  if(tabName==='guide'){guideUiVariant='popup';applyGuideUiVariant();}
+  switchTutorTab(tabName);
+}
+function closeTutorPanel() {
+  document.getElementById('tutorPanel').classList.remove('open');
+  stopGuidePickMode();
+  clearGuideSelected();
+}
+function toggleChat() {
+  const p = document.getElementById('tutorPanel');
+  if(p.classList.contains('open') && document.getElementById('tab-chat').classList.contains('active')) {
+    closeTutorPanel();
+  } else {
+    openTutorPanel('chat');
+  }
+}
+// Legacy openGuide wrapper
+function openGuide() {
+  openGuideEmbedded();
+}
+function openGuidePopup(){
+  guideUiVariant='popup';
+  applyGuideUiVariant();
+  openTutorPanel('guide');
+  startGuidePickMode();
+}
+function openGuideInline(){
+  guideUiVariant='inline';
+  applyGuideUiVariant();
+  const p=document.getElementById('tutorPanel');
+  if(p && p.classList.contains('open') && document.getElementById('tab-guide').classList.contains('active')) closeTutorPanel();
+  // Ensure center column becomes visible and sized
+  setGuideInlineOpen(true);
+  openInlineGuidePanel();
+  startGuidePickMode();
+}
+function openGuideEmbedded(){
+  guideUiVariant='embedded';
+  applyGuideUiVariant();
+  setGuideInlineOpen(false);
+  const wraps=[...document.querySelectorAll('.answers-scroll .field-wrap')];
+  const cur=wraps[currentFieldIndex];
+  if(!cur) return;
+  let host=cur.querySelector('#guideEmbed');
+  if(!host){
+    host=document.createElement('div');
+    host.id='guideEmbed';
+    host.className='embedded-guide';
+    cur.appendChild(host);
+  }
+  const guideKeys=['r_total','i_total','v_r1','v_parallel','v_r4','i_r2','i_r3','p_total'];
+  const inp=cur.querySelector('.field-in');
+  const key=inp && inp.dataset.guideKey || guideKeys[currentFieldIndex];
+  embeddedGuideHost = host;
+  openGuideTopic(key, inp && inp.id);
+  host.classList.add('open');
+}
+
+function closeGuideEmbedded(){
+  const wraps=[...document.querySelectorAll('.answers-scroll .field-wrap')];
+  const cur=wraps[currentFieldIndex];
+  if(!cur) return;
+  const host=cur.querySelector('#guideEmbed');
+  if(host){ host.innerHTML=''; host.classList.remove('open'); }
+  const actions=cur.querySelector('.field-actions');
+  if(actions){ actions.innerHTML=`<button class="btn btn-secondary" onclick="openGuideEmbedded()">Guide Me</button>`; }
+  guideActiveKey=null;
+  guideStepIndex=0;
+  guideStepUnlocked=false;
+  guideStepStates=[];
+  embeddedGuideHost=null;
+}
+
+function adjustLayoutForGuide(open){
+  return;
+}
+function closeGuide() {
+  if(guideUiVariant==='popup') closeTutorPanel();
+  else closeInlineGuide();
+  // Collapse center column when hiding inline guide
+  if(guideUiVariant==='inline'){ setGuideInlineOpen(false); }
+}
+
+function switchTutorTab(tab) {
+  if (tab === 'guide') return;
+
+  // Tabs
+  const t = document.getElementById('tab-'+tab);
+  if(t) {
+    document.querySelectorAll('.tutor-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  }
+  
+  // Views
+  const v = document.getElementById('view-'+tab);
+  if(v) {
+    document.querySelectorAll('.tutor-view').forEach(x => x.classList.remove('active'));
+    v.classList.add('active');
+  }
+}
+
+// Settings Modal
+function openSettingsModal() {
+  document.getElementById('settingsModalOverlay').classList.add('open');
+}
+function closeSettingsModal() {
+  document.getElementById('settingsModalOverlay').classList.remove('open');
+}
+function switchSettingsTab(secId, el) {
+  // Sidebar
+  document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  
+  // Content sections
+  document.querySelectorAll('.setting-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('set-'+secId).classList.add('active');
+  
+  // Update preview based on section defaults if needed
+  updatePreview();
+}
+
+function updatePreview(type, val) {
+  const p = document.getElementById('previewResponse');
+  const section = document.querySelector('.setting-section.active').id;
+  
+  if (section === 'set-response') {
+    // We need current tone and length to combine logic, or just simplify for demo
+    // Ideally we read the DOM elements
+    const tone = document.querySelector('#set-response select').value;
+    const len = document.querySelector('#set-response input[type=range]').value;
+    
+    if(tone === 'Socratic') {
+      p.textContent = "That's an interesting problem. What do you think is the first step to find the equivalent resistance?";
+    } else if (tone === 'Neutral') {
+      if(len == 1) p.textContent = "Identify R2||R3 first. Calculate R_eq.";
+      else if(len == 3) p.textContent = "To solve this, first identify the parallel resistors R2 and R3. Calculate their equivalent resistance using the product-over-sum formula, then add it to R1 and R4 to find the total.";
+      else p.textContent = "To solve this, first identify the parallel resistors R2 and R3. Calculate their equivalent resistance, then add it to R1 and R4.";
+    } else {
+      // Encouraging
+      if (len == 1) p.textContent = "You're doing great! Start by combining R2 and R3 in parallel.";
+      else if (len == 3) p.textContent = "That's a great question! Let's work through this together. First, let's identify the parallel resistors R2 and R3. Once we find their equivalent resistance, the whole circuit becomes a simple series chain.";
+      else p.textContent = "That's a great question! Let's work through this together. First, let's identify the parallel resistors.";
+    }
+  } 
+  else if (section === 'set-interaction') {
+    if(val === 'reactive') p.textContent = "I'll wait here until you ask for help. Take your time!";
+    else if(val === 'balanced') p.textContent = "I'll check in with you occasionally and offer hints after you've been stuck for about 10 minutes.";
+    else if(val === 'proactive') p.textContent = "I'll guide you step-by-step and keep track of your progress constantly.";
+    else p.textContent = "I'll check in with you occasionally and offer hints after you've been stuck for about 10 minutes.";
+  } 
+  else if (section === 'set-teaching') {
+    if(val === 'examples') p.textContent = "Here's a similar example: Imagine two pipes connected side-by-side...";
+    else if(val === 'concepts') p.textContent = "Think about the concept of 'current' as water flow. In parallel branches, the water splits...";
+    else p.textContent = "I'll focus on conceptual explanations and step-by-step breakdowns, starting with the big picture.";
+  } 
+  else if (section === 'set-access') {
+    if(val === 'dyslexia') {
+      p.style.fontFamily = 'OpenDyslexic, sans-serif'; // Mock effect
+      p.textContent = "I've switched to a font that might be easier to read.";
+    } else {
+      p.style.fontFamily = '';
+      p.textContent = "I've adjusted the text contrast and font size to make things easier to read.";
+    }
+  }
+}
+
+function saveSettings() {
+  toast('✅ Settings saved');
+  closeSettingsModal();
+}
+function resetSettings() {
+  toast('↺ Settings reset to default');
+  // Logic to reset form inputs would go here
+  updatePreview();
+}
+
+// Attach file to chat
+function handleChatFile(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const box=document.getElementById('chatMsgs');
+    const um=document.createElement('div');um.className='msg user';
+    if(file.type.startsWith('image/')){
+      um.innerHTML=`<div class="msg-bub" style="padding:6px"><div class="msg-attachment"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> ${file.name}</div><img src="${ev.target.result}" style="max-width:180px;border-radius:6px;display:block;margin-top:4px"></div>`;
+    } else {
+      um.innerHTML=`<div class="msg-bub"><div class="msg-attachment"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${file.name}</div></div>`;
+    }
+    box.appendChild(um);box.scrollTop=9999;
+    document.getElementById('chips').style.display='none';
+    botMsg("Thanks for sharing! I can see your file. Walk me through what you're working on — what part is tricky?");
+  };
+  if(file.type.startsWith('image/'))reader.readAsDataURL(file);
+  else reader.readAsText(file);
+  input.value='';
+}
+
+const REPLIES=[
+  {k:['r_total','r total','total resist','rtotal','req','r_eq','equiv','equivalent resistance','equivalent'],r:{
+    concise:"R2 and R3 are connected in parallel. Use: \\(R_{\\mathrm{eq}}=\\dfrac{R_2 R_3}{R_2+R_3}\\). Now substitute \\(R_2=30\\,\\Omega\\) and \\(R_3=50\\,\\Omega\\) and compute \\(R_{\\mathrm{eq}}\\) yourself. Then compute \\(R_{\\text{total}}=R_1+R_{\\mathrm{eq}}+R_4\\) with \\(R_1=20\\,\\Omega\\) and \\(R_4=20\\,\\Omega\\). Send me your two results; type “show answer” only to check.",
+    detailed:"R2 and R3 are in parallel (they share the same two nodes), so they have the same voltage and the current splits.\n\nTwo‑resistor parallel formula:\n- \\(R_{\\mathrm{eq}}=\\dfrac{R_2 R_3}{R_2+R_3}\\)  (equivalently: \\(\\dfrac{1}{R_{\\mathrm{eq}}}=\\dfrac{1}{R_2}+\\dfrac{1}{R_3}\\))\n\nNow do the arithmetic:\n1) Substitute \\(R_2=30\\,\\Omega\\), \\(R_3=50\\,\\Omega\\) → compute \\(R_{\\mathrm{eq}}\\) (don’t simplify it for me—tell me what you get).\n2) Then the circuit becomes series: \\(R_{\\text{total}}=R_1+R_{\\mathrm{eq}}+R_4\\) with \\(R_1=20\\,\\Omega\\) and \\(R_4=20\\,\\Omega\\).\n\nReply with your \\(R_{\\mathrm{eq}}\\) and \\(R_{\\text{total}}\\). Use “show answer” only if you want to verify.",
+    socratic:"R2 and R3 are in parallel. What’s the two‑resistor parallel formula? After you find \\(R_{\\mathrm{eq}}\\), compute \\(R_{\\text{total}}=20\\,\\Omega+R_{\\mathrm{eq}}+20\\,\\Omega\\). What value do you get?"
+  }},
+  {k:['parallel','r2||','r2‖'],r:{
+    concise:"Parallel test: same two nodes → same voltage, smaller equivalent; two‑branch: \\(R_{\\mathrm{eq}}=\\dfrac{R_2 R_3}{R_2+R_3}\\).",
+    detailed:"Parallel essentials:\n- Same nodes → same voltage; branch currents split.\n- Equivalent: \\(\\dfrac{1}{R_{\\mathrm{eq}}}=\\dfrac{1}{R_2}+\\dfrac{1}{R_3}\\) (or \\(R_{\\mathrm{eq}}=\\dfrac{R_2 R_3}{R_2+R_3}\\)).\n- Intuition: more paths → lower total resistance than any branch.",
+    socratic:"If two resistors connect to the same node pair, what does that imply about their voltages? How should the equivalent compare to either branch?"
+  }},
+  {k:['current divid','branch current','i_r2','i_r3'],r:{
+    concise:"Current divider (two branches): \\(I_{R_2}=I_{\\text{total}}\\,\\dfrac{R_3}{R_2+R_3}\\), \\(I_{R_3}=I_{\\text{total}}\\,\\dfrac{R_2}{R_2+R_3}\\). Smaller R → larger current.",
+    detailed:"Use the current divider:\n\\(I_{R_2}=I_{\\text{total}}\\,\\dfrac{R_3}{R_2+R_3}\\)\n\\(I_{R_3}=I_{\\text{total}}\\,\\dfrac{R_2}{R_2+R_3}\\)\nIntuition: less resistance → more current through that branch.",
+    socratic:"With the same voltage on both branches, which branch carries more current — the smaller or larger resistor? Why?"
+  }},
+  {k:['voltage','v_r1','v_r4','v_r2','kirchhoff','kvl'],r:{
+    concise:"\\(V=I\\,R\\); in series, drops add to the source (KVL). Parallel branch shares one voltage.",
+    detailed:"Step through with \\(V=I\\,R\\):\n- Find \\(I_{\\text{total}}\\) using the total resistance.\n- R1 and R4 drops are \\(I_{\\text{total}}\\,R\\).\n- The parallel block’s voltage is \\(I_{\\text{total}}\\,R_{\\mathrm{eq}}\\) (and equals \\(V_{R_2}=V_{R_3}\\)).\n- KVL check: all drops sum to the 10V source.",
+    socratic:"Once you know I_total, how do you get each drop? Why do R2 and R3 share the same voltage?"
+  }},
+  {k:['power','watt','p_total'],r:{
+    concise:"Power: \\(P=V\\,I=I^2R=\\dfrac{V^2}{R}\\); for the whole circuit use \\(P_{\\text{total}}=V_{\\text{source}}\\,I_{\\text{total}}\\).",
+    detailed:"Three equivalent forms: \\(P=V\\,I=I^2R=\\dfrac{V^2}{R}\\). For the whole circuit, \\(P_{\\text{total}}=V_{\\text{source}}\\,I_{\\text{total}}\\); you can verify by summing all element powers.",
+    socratic:"Given a segment’s voltage and current, which power form would you choose? How should the sum of element powers relate to the source power?"
+  }},
+  {k:['hint','stuck','help','start','begin'],r:{
+    concise:"Roadmap: ① identify parallel ② parallel equivalent ③ series sum ④ I = V/R ⑤ branch currents ⑥ power + KVL/KCL checks.",
+    detailed:"Solution path:\n① Identify R2‖R3\n② Compute R_eq\n③ Add series parts → R_total\n④ I_total = V/R_total\n⑤ Drops and branch currents\n⑥ Power and KVL/KCL checks",
+    socratic:"In a series‑parallel network, what’s the very first action that simplifies the problem the most? Why?"
+  }},
+  {k:['show answer','show','answer','result','final','answer please','numbers'],r:{
+    concise:"Reference numbers:\nR2‖R3 = 18.75Ω\nR_total = 58.75Ω\nI_total ≈ 0.1702A\nV_R1 ≈ 3.404V\nV_R2 = V_R3 ≈ 3.191V\nV_R4 ≈ 3.404V\nI_R2 ≈ 0.1064A\nI_R3 ≈ 0.0638A\nP_total ≈ 1.702W",
+    detailed:"Full breakdown:\n- Parallel eq: R2‖R3 = (30×50)/(30+50) = 18.75Ω\n- Total: R_total = 20 + 18.75 + 20 = 58.75Ω\n- Current: I_total = 10/58.75 ≈ 0.1702A\n- Voltages: V_R1 ≈ 3.404V, V_parallel ≈ 3.191V, V_R4 ≈ 3.404V\n- Branch currents: I_R2 ≈ 0.1064A, I_R3 ≈ 0.0638A\n- Power: P_total = 10×0.1702 ≈ 1.702W",
+    socratic:"Want to verify step by step? We can check in order: parallel eq → total R → total I → drops → branch currents → total power."
+  }}
+];
+
+function getReply(lo){
+  for(const r of REPLIES){if(r.k.some(k=>lo.includes(k))){
+    const style=adhdMode?'concise':responseStyle;
+    return r.r[style]||r.r.concise;
+  }}
+  if(adhdMode)return "Let's keep it simple! What part is confusing you right now? Just describe it in your own words.";
+  return "Good question! Start by identifying which resistors are in series vs parallel — that's the key that unlocks everything. Which part is tricky?";
+}
+
+function botMsg(text){
+  const box=document.getElementById('chatMsgs'),w=document.createElement('div');
+  w.className='msg bot';
+  w.innerHTML='<div class="msg-av"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="msg-bub"><div class="dots"><span></span><span></span><span></span></div></div>';
+  box.appendChild(w);box.scrollTop=9999;
+  setTimeout(()=>{
+    const bub=w.querySelector('.msg-bub');
+    bub.innerHTML=text;
+    typesetMath(bub);
+    box.scrollTop=9999;
+  },820);
+}
+
+function addChatImageMessage(label,dataURL,txt){
+  const box=document.getElementById('chatMsgs');
+  const um=document.createElement('div');um.className='msg user';
+  const extra=txt?`<span>${txt}</span>`:'';
+  um.innerHTML=`<div class="msg-bub" style="padding:6px"><div class="msg-attachment"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> ${label}</div><img src="${dataURL}" style="max-width:180px;border-radius:6px;display:block;margin-top:4px;margin-bottom:6px">${extra}</div>`;
+  box.appendChild(um);box.scrollTop=9999;
+}
+
+function sendMsg(){
+  const inp=document.getElementById('chatIn'),text=inp.value.trim();if(!text)return;
+  const box=document.getElementById('chatMsgs'),um=document.createElement('div');
+  um.className='msg user';um.innerHTML=`<div class="msg-bub">${text}</div>`;
+  box.appendChild(um);inp.value='';inp.style.height='';box.scrollTop=9999;
+  document.getElementById('chips').style.display='none';
+  botMsg(getReply(text.toLowerCase()));
+}
+function quickSend(t){document.getElementById('chatIn').value=t;sendMsg()}
+function autoH(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,78)+'px'}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000)}
+
+function initInstructionBanner(){const el=document.getElementById('instruction');if(!el)return;if(localStorage.getItem('instrDismissed')==='1'){el.style.display='none'}}
+function dismissInstruction(){localStorage.setItem('instrDismissed','1');const el=document.getElementById('instruction');if(el)el.style.display='none'}
+
+let currentProb=0;
+let currentFieldIndex=0;
+const PROBLEMS=[{
+  title:'Series-Parallel Resistor Circuit',
+  desc:'Find the total current, voltage drops, branch currents, and power for each resistor.',
+  done: false,
+  fields:[
+    {lbl:'Total Resistance (Ω) — \\(R_{\\text{total}}\\)',ph:'\\(R_{\\text{total}}\\)',ans:'58.75'},
+    {lbl:'Total Current (A) — \\(I_{\\text{total}}\\)',ph:'\\(I_{\\text{total}}\\)',ans:'0.1702'},
+    {lbl:'Voltage across R1 (V) — \\(V_{R_1}\\)',ph:'\\(V_{R_1}\\)',ans:'3.404'},
+    {lbl:'Voltage across R2‖R3 (V) — \\(V_{R_2} = V_{R_3}\\)',ph:'\\(V_{R_2} = V_{R_3}\\)',ans:'3.191'},
+    {lbl:'Voltage across R4 (V) — \\(V_{R_4}\\)',ph:'\\(V_{R_4}\\)',ans:'3.404'},
+    {lbl:'Current through R2 (A) — \\(I_{R_2}\\)',ph:'\\(I_{R_2}\\)',ans:'0.1064'},
+    {lbl:'Current through R3 (A) — \\(I_{R_3}\\)',ph:'\\(I_{R_3}\\)',ans:'0.0638'},
+    {lbl:'Total Power (W) — \\(P_{\\text{total}}\\)',ph:'\\(P_{\\text{total}}\\)',ans:'1.702'}
+  ]
+}];
+
+function renderPagination() {
+  const nav = document.getElementById('probNav');
+  if(nav) { nav.innerHTML = ''; }
+}
+
+function renderProb(i){
+   currentProb = i;
+   const p=PROBLEMS[i];
+   document.querySelector('.prob-head h2').textContent=p.title;
+   document.querySelector('.prob-head p').textContent=p.desc;
+   
+   renderPagination();
+   
+   // Update Nav Buttons
+   const totalFields = (p.fields||[]).length;
+   const btnPrev = document.getElementById('btnPrevField');
+   const btnNext = document.getElementById('btnNextField');
+   if(btnPrev) btnPrev.style.display = (currentFieldIndex === 0) ? 'none' : '';
+   if(btnNext) btnNext.style.display = (currentFieldIndex === totalFields - 1) ? 'none' : '';
+
+   // Render Fields
+   const wraps=[...document.querySelectorAll('.answers-scroll .field-wrap')];
+  const guideKeys=['r_total','i_total','v_r1','v_parallel','v_r4','i_r2','i_r3','p_total'];
+  p.fields.forEach((f,idx)=>{
+    if(wraps[idx]) {
+      const w=wraps[idx];
+      const lbl=w.querySelector('.field-lbl');
+      const inp=w.querySelector('.field-in');
+      lbl.innerHTML=f.lbl;
+      
+      let phEl=w.querySelector('.field-placeholder');
+      if(!phEl){
+        phEl=document.createElement('div');
+        phEl.className='field-placeholder';
+        w.appendChild(phEl);
+      }
+      phEl.innerHTML=f.ph;
+      
+      inp.placeholder=' ';
+      inp.dataset.ans=f.ans;
+      inp.dataset.guideKey=guideKeys[idx]||'';
+      
+      // Restore state
+      inp.value = f.value || '';
+      inp.className = 'field-in ' + (f.status || '');
+      // Add input listener to save value
+      inp.oninput = function() {
+        f.value = this.value;
+      };
+
+      w.style.display = (idx===currentFieldIndex) ? 'block' : 'none';
+      
+      const fb=w.querySelector('.field-feedback');
+      if(fb){
+        const hasState = f.status && (f.status.includes('ok') || f.status.includes('err'));
+        fb.style.display = hasState ? '' : 'none';
+        if(hasState) {
+          fb.textContent = f.status.includes('ok') ? 'Correct' : (inp.value.trim() ? 'Incorrect — try again' : 'Empty — please enter a value');
+          fb.className = 'field-feedback ' + f.status;
+        }
+      }
+      
+      let actions=w.querySelector('.field-actions');
+      if(!actions){
+        actions=document.createElement('div');
+        actions.className='field-actions';
+        w.appendChild(actions);
+      }
+      // Restore actions
+      let btns = '';
+      const isCorrect = f.status && f.status.includes('ok');
+      const isLastField = (idx === totalFields - 1);
+      
+      // Guide Me: show if wrong >= 1 and not correct
+      if(!isCorrect){
+         btns += `<button class="btn btn-secondary" onclick="openGuideEmbeddedFrom(this)">Guide Me</button>`;
+      }
+      
+      // Next Problem: show if correct and not last
+      if(isCorrect && !isLastField){
+         btns += `<button class="btn btn-secondary next-problem-btn" onclick="nextFieldFrom(this)">Next Problem</button>`;
+      }
+      
+      actions.innerHTML = btns;
+    }
+  });
+  refreshProg();
+  // Typeset LaTeX in the answer labels
+  const answers=document.querySelector('.answers-scroll');
+  if(answers) typesetMath(answers);
+}
+
+function nextProb(){
+  const next = (currentProb + 1) % PROBLEMS.length;
+  renderProb(next);
+  toast(`Problem ${next+1}/${PROBLEMS.length}`);
+}
+
+function nextField(){
+  const p=PROBLEMS[currentProb];
+  const total=(p && p.fields) ? p.fields.length : 0;
+  if(total<=0) return;
+  currentFieldIndex = (currentFieldIndex + 1) % total;
+  renderProb(currentProb);
+}
+function prevField(){
+  const p=PROBLEMS[currentProb];
+  const total=(p && p.fields) ? p.fields.length : 0;
+  if(total<=0) return;
+  currentFieldIndex = (currentFieldIndex - 1 + total) % total;
+  renderProb(currentProb);
+}
+
+renderProb(0);
+initInstructionBanner();
+updateBadge();
+
+// Simple Confetti
+window.Confetti = (function() {
+  let canvas=null;
+  let ctx=null;
+  let rafId=0;
+  let running=false;
+  let particles=[];
+  const colors=['#60a5fa','#34d399','#fbbf24','#fb7185','#a78bfa','#38bdf8','#f97316'];
+  const maxCount=180;
+
+  function ensureCanvas(){
+    if(canvas && ctx) return;
+    canvas=document.getElementById('confetti-canvas');
+    if(!canvas){
+      canvas=document.createElement('canvas');
+      canvas.id='confetti-canvas';
+      canvas.style.cssText='display:block;z-index:999999;pointer-events:none;position:fixed;inset:0';
+      document.body.appendChild(canvas);
+    }
+    ctx=canvas.getContext('2d');
+    resize();
+  }
+
+  function resize(){
+    if(!canvas) return;
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+  }
+
+  function mkParticle(){
+    const size=6 + Math.random()*10;
+    return {
+      x: Math.random()*canvas.width,
+      y: -30 - Math.random()*canvas.height,
+      vx: -1.2 + Math.random()*2.4,
+      vy: 2.2 + Math.random()*3.2,
+      rot: Math.random()*Math.PI*2,
+      vr: -0.12 + Math.random()*0.24,
+      size,
+      color: colors[(Math.random()*colors.length)|0]
+    };
+  }
+
+  function tick(){
+    if(!running || !ctx || !canvas) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<particles.length;i++){
+      const p=particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      if(p.y > canvas.height + 40 || p.x < -40 || p.x > canvas.width + 40){
+        particles[i]=mkParticle();
+        continue;
+      }
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle=p.color;
+      ctx.fillRect(-p.size/2, -p.size/3, p.size, p.size*0.65);
+      ctx.restore();
+    }
+    rafId=requestAnimationFrame(tick);
+  }
+
+  function start(){
+    if(running) return;
+    ensureCanvas();
+    particles=[];
+    for(let i=0;i<maxCount;i++) particles.push(mkParticle());
+    running=true;
+    window.addEventListener('resize', resize, true);
+    tick();
+  }
+
+  function stop(){
+    running=false;
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId=0;
+    window.removeEventListener('resize', resize, true);
+    if(ctx && canvas) ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+
+  function remove(){
+    stop();
+    if(canvas) canvas.remove();
+    canvas=null;
+    ctx=null;
+  }
+
+  return {start,stop,remove};
+})();
+
+function closeCongrats(){
+  document.getElementById('congratsModal').classList.remove('open');
+  if(window.Confetti) window.Confetti.stop();
+  setTimeout(()=>{
+     if(window.Confetti) window.Confetti.remove();
+  }, 100);
+}
+
+(function(){
+  var u=new URL(location.href);
+  if(!u.searchParams.has('profile')){
+    u.searchParams.set('profile','advanced');
+    history.replaceState(null,'',u.toString());
+  }
+  var p=u.searchParams.get('profile').toLowerCase();
+  var src=p==='novice'?'mode-novice.js':'mode-advanced.js';
+  var s=document.createElement('script');
+  s.src=src;
+  document.body.appendChild(s);
+})();
+
+</script>
+</body>
+</html>
