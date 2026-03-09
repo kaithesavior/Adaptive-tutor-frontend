@@ -2682,6 +2682,16 @@ function withExtraHint(base,extra){
   if(!base) return extra;
   return base + '<div class="guide-hint-gap"></div>' + extra;
 }
+function ensureMathGlue(s){
+  if(typeof s!=='string') return s;
+  return s.replace(/ (\\\(.*?\\\))/g,'&nbsp;$1');
+}
+function latexSafe(s){
+  if(typeof s!=='string') return s;
+  return s.replace(/\\\(([\s\S]*?)\\\)/g, function(_, inner){
+    return '\\(' + inner.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '\\)';
+  });
+}
 
 function renderedStepForPolicy(key,idx,st,policy){
   const out={...st};
@@ -2724,6 +2734,7 @@ function renderedStepForPolicy(key,idx,st,policy){
         out.text=withExtraHint(out.text,`<span class="guide-hint-tag sanity">Sense</span>If \\(I\\) halves, \\(P\\) halves (with fixed \\(V\\)). Units must be Watt (W).`);
       }
     }
+    out.text=ensureMathGlue(latexSafe(out.text));
     return out;
   }
 
@@ -2826,7 +2837,7 @@ function renderedStepForPolicy(key,idx,st,policy){
         .replace('then ','');
     }
 
-    out.hint=hint;
+    out.hint=ensureMathGlue(latexSafe(hint));
     return out;
   }
 
